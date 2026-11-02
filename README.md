@@ -129,6 +129,17 @@ pbj-tracking/
 
 ---
 
+## URL Website
+
+|Page |	URL	| Route name| 
+|----------|------------|------------|
+|Dashboard | /unit/dashboard | unit.dashboard |
+|Daftar Permohonan | /unit/permohonan |unit.permohonan.index |
+|Buat Permohonan |	/unit/permohonan/buat | unit.permohonan.create |
+|Detail Permohonan | /unit/permohonan/{id} |unit.permohonan.show |
+|Tracking |	/unit/tracking/{id?} | unit.tracking.index |
+|Dokumen | /unit/dokumen | unit.dokumen.index |
+
 ## Kontribusi (untuk Anggota Kelompok)
 
 1. Selalu buat branch baru sebelum mengerjakan fitur: git checkout -b fitur/nama-fitur
