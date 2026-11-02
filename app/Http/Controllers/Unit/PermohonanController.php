@@ -58,6 +58,16 @@ class PermohonanController extends Controller
         ]);
     }
 
+    /** Formulir Revisi Pengajuan: formulir terisi data lama + kotak Permintaan Perbaikan */
+    public function revisi(int $id)
+    {
+        $permohonan = DataPermohonan::cari($id);
+
+        abort_if($permohonan === null, 404);
+
+        return view('unit.permohonan.revisi', ['permohonan' => $permohonan]);
+    }
+
     /** Detail Permohonan berdasarkan id */
     public function show(int $id)
     {
@@ -65,6 +75,9 @@ class PermohonanController extends Controller
 
         abort_if($permohonan === null, 404);
 
-        return view('unit.permohonan.show', ['permohonan' => $permohonan]);
+        return view('unit.permohonan.show', [
+            'permohonan' => $permohonan,
+            'alur'       => DataPermohonan::alur($permohonan),
+        ]);
     }
 }

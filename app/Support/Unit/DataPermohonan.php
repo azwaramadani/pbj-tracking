@@ -22,6 +22,8 @@ class DataPermohonan
         'menunggu' => 'Waiting Approval',
         'diproses' => 'Processing',
         'selesai'  => 'Completed',
+        'revisi'   => 'Revisi',
+        'ditolak'  => 'Ditolak',
     ];
 
     /** Label tahap yang ditampilkan pada lencana di halaman Detail Permohonan */
@@ -30,6 +32,8 @@ class DataPermohonan
         'menunggu' => 'Menunggu Approval',
         'diproses' => 'Sedang Ditinjau Perencanaan',
         'selesai'  => 'Pengadaan Selesai',
+        'revisi'   => 'Perlu Revisi',
+        'ditolak'  => 'Ditolak',
     ];
 
     /** Seluruh permohonan milik pengguna (45 data, id 1-45) */
@@ -41,18 +45,39 @@ class DataPermohonan
             ->map(fn (array $baris) => self::lengkapi($baris));
     }
 
-    /** Lima pengajuan terbaru untuk tabel di Dashboard (id 101-105) */
+    /** 34 pengajuan untuk tabel "Daftar Pengajuan" di Dashboard (id 101-134). Lima baris pertama memakai teks contoh dari mockup V.2 */
     public static function dashboard(): Collection
     {
+        static $cache = null;
+
+        return $cache ??= self::bangunDashboard();
+    }
+
+    private static function bangunDashboard(): Collection
+    {
         $unit = 'Fakultas Teknik - Perencanaan & IT';
+        $judul = 'Pengadaan Komputer Lab Rekayasa Perangkat Lunak';
+        $tanggal = Carbon::create(2026, 2, 14, 9, 30);
 
         $baris = [
-            [101, '021/UN1.FT/PBJ/2026', 'Pengadaan Komputer Lab Rekayasa Perangkat Lunak', 'diproses', Carbon::create(2026, 2, 14, 9, 30)],
-            [102, '019/UN1.FT/PBJ/2026', 'Renovasi Ruang Kuliah 302 Gedung Dekanat',        'selesai',  Carbon::create(2026, 2, 11, 9, 0)],
-            [103, '018/UN1.FT/PBJ/2026', 'Pembelian Alat Peraga Elektronika Lanjut',        'menunggu', Carbon::create(2026, 2, 9, 9, 0)],
-            [104, '015/UN1.FT/PBJ/2026', 'Sewa Cloud Server untuk Repository Riset',        'diproses', Carbon::create(2026, 2, 5, 9, 0)],
-            [105, '012/UN1.FT/PBJ/2026', 'Pengadaan AC Split Ruang Seminar FT',             'selesai',  Carbon::create(2026, 1, 29, 9, 0)],
+            [101, '021/SPK/PHB-JBT/X/2026', $judul, 'revisi',   $tanggal],
+            [102, '020/SPK/PHB-JBT/X/2026', $judul, 'diproses', $tanggal],
+            [103, '019/SPK/PHB-JBT/X/2026', $judul, 'selesai',  $tanggal],
+            [104, '018/SPK/PHB-JBT/X/2026', $judul, 'draft',    $tanggal],
+            [105, '017/SPK/PHB-JBT/X/2026', $judul, 'ditolak',  $tanggal],
         ];
+
+        // Baris ke-6 sampai ke-34 dibangkitkan agar paginasi (6 baris per halaman) bisa dicoba
+        $urutanStatus = ['selesai', 'diproses', 'revisi', 'menunggu', 'draft', 'ditolak'];
+        for ($i = 5; $i < 34; $i++) {
+            $baris[] = [
+                101 + $i,
+                sprintf('%03d/SPK/PHB-JBT/X/2026', $i < 21 ? 21 - $i : 100 + $i),
+                $judul,
+                $urutanStatus[$i % count($urutanStatus)],
+                $tanggal->copy()->subDays($i),
+            ];
+        }
 
         return collect($baris)->map(function (array $b) use ($unit) {
             [$id, $noSurat, $judul, $status, $kirim] = $b;
@@ -67,13 +92,15 @@ class DataPermohonan
                 'update'  => $kirim->copy()->addDays(2),
             ]);
 
+            // Tanggal surat (baris kecil di bawah nomor surat pada tabel Dashboard)
+            $data['tgl_surat'] = self::tgl(Carbon::create(2026, 10, 10));
+
             // Data lengkap untuk permohonan contoh pada mockup halaman Detail Permohonan
             if ($id === 101) {
                 $data['deskripsi'] = 'Sebab spesifikasi komputer di Lab RPL saat ini masih menggunakan Core i3 generasi ke-4, tidak mumpuni lagi untuk menjalankan engine pengembangan modern serta IDE berat seperti Android Studio dan Visual Studio.';
                 $data['lampiran'] = [
                     ['nama' => 'RAB_Pengadaan_Lab_RPL.xlsx',            'ukuran' => '340 KB'],
                     ['nama' => 'KAK_Spesifikasi_Teknis_Komputer.pdf',   'ukuran' => '1.2 MB'],
-                    ['nama' => 'Surat_Permohonan_Ttd_Dekan.pdf',        'ukuran' => '450 KB'],
                 ];
                 $data['log'] = [
                     ['judul' => 'Pengajuan Selesai', 'keterangan' => '14 Feb 2026 - PPK Unit',          'state' => 'selesai'],
@@ -110,7 +137,7 @@ class DataPermohonan
         /** @var Carbon|null $kirim */
         $kirim = $permohonan['kirim'];
 
-        $aktifKe = ['draft' => 0, 'menunggu' => 2, 'diproses' => 4, 'selesai' => 11][$permohonan['status']];
+        $aktifKe = ['draft' => 0, 'menunggu' => 2, 'diproses' => 4, 'selesai' => 11, 'revisi' => 2, 'ditolak' => 2][$permohonan['status']];
 
         // [judul, penanggung jawab, jumlah hari estimasi dari tanggal kirim, keterangan tetap bila tahap belum selesai]
         $tahap = [
@@ -259,6 +286,12 @@ class DataPermohonan
             case 'menunggu':
                 $log[] = ['judul' => 'Approval Wadir 2', 'keterangan' => 'Menunggu Persetujuan', 'state' => 'aktif'];
                 break;
+            case 'revisi':
+                $log[] = ['judul' => 'Perlu Revisi', 'keterangan' => 'Menunggu perbaikan dari pengusul', 'state' => 'aktif'];
+                break;
+            case 'ditolak':
+                $log[] = ['judul' => 'Ditolak Wadir 2', 'keterangan' => 'Wadir Bidang Umum', 'state' => 'selesai'];
+                break;
             case 'diproses':
                 $log[] = ['judul' => 'Disetujui Wadir 2', 'keterangan' => 'Wadir Bidang Umum', 'state' => 'selesai'];
                 $log[] = ['judul' => 'Review Perencanaan', 'keterangan' => 'Sedang Berlangsung', 'state' => 'aktif'];
@@ -269,9 +302,53 @@ class DataPermohonan
                 break;
         }
 
+        // Status kartu persetujuan Wadir 2 dan Perencanaan mengikuti status permohonan (kunci: menunggu, disetujui, ditolak, revisi)
+        [$statusWadir, $statusPerencanaan] = [
+            'draft'    => ['menunggu',  'menunggu'],
+            'menunggu' => ['menunggu',  'menunggu'],
+            'diproses' => ['disetujui', 'menunggu'],
+            'selesai'  => ['disetujui', 'disetujui'],
+            'revisi'   => ['ditolak',   'revisi'],
+            'ditolak'  => ['ditolak',   'menunggu'],
+        ][$status];
+
+        $persetujuan = [
+            'wadir2' => [
+                'judul'            => 'Wadir 2',
+                'subjudul'         => 'Wakil Direktur 2',
+                'status'           => $statusWadir,
+                'penanggung_jawab' => 'Dr. Ir. H. Hermawan',
+                'waktu'            => $statusWadir === 'disetujui' ? '15 Februari 2026' : 'Belum disetujui',
+            ],
+            'perencanaan' => [
+                'judul'            => 'Perencanaan',
+                'subjudul'         => 'Unit Perencanaan & IT',
+                'status'           => $statusPerencanaan,
+                'penanggung_jawab' => 'Dina Rahmawati',
+                'waktu'            => $statusPerencanaan === 'disetujui' ? '16 Februari 2026' : 'Belum disetujui',
+            ],
+        ];
+
+        $riwayat = [
+            ['waktu' => '14 Feb 2026 • 09:30', 'user' => 'Hendra Wijaya',       'role' => 'PPK Unit',    'aktivitas' => 'Membuat pengajuan',            'sebelumnya' => 'Draf',     'baru' => 'Diajukan',  'catatan' => 'Dokumen awal diserahkan'],
+            ['waktu' => '15 Feb 2026 • 10:45', 'user' => 'Dr. Ir. H. Hermawan', 'role' => 'Wadir 2',     'aktivitas' => 'Persetujuan Wadir 2',          'sebelumnya' => 'Menunggu', 'baru' => 'Disetujui', 'catatan' => 'Wadir 2 disetujui; global menunggu Perencanaan'],
+            ['waktu' => '15 Feb 2026 • 11:10', 'user' => 'Dina Rahmawati',      'role' => 'Perencanaan', 'aktivitas' => 'Membuka tinjauan anggaran',    'sebelumnya' => 'Menunggu', 'baru' => 'Menunggu', 'catatan' => 'Verifikasi RAB sedang berlangsung'],
+            ['waktu' => '16 Feb 2026 • 08:20', 'user' => 'Dina Rahmawati',      'role' => 'Perencanaan', 'aktivitas' => 'Menambahkan catatan verifikasi', 'sebelumnya' => 'Menunggu', 'baru' => 'Menunggu', 'catatan' => 'Butuh klarifikasi spesifikasi RAM'],
+        ];
+
         return $b + [
             'label_status'  => self::LABEL_STATUS[$status],
             'tahap'         => self::LABEL_TAHAP[$status],
+            'nilai_anggaran' => 'Rp. 100.000.000,00',
+            'permintaan_perbaikan' => [
+                'diminta_oleh'     => 'Budi Setiawan',
+                'peninjau'         => 'Wadir 2 — Budi Setiawan',
+                'waktu'            => '14 Oktober 2026 09:30 WIB',
+                'penanggung_jawab' => 'User Unit — Mahfudh Al Rafif',
+                'catatan'          => 'Lengkapi klausul garansi minimum 3 tahun dan rincian layanan purna jual pada spesifikasi teknis.',
+            ],
+            'persetujuan'   => $persetujuan,
+            'riwayat'       => $riwayat,
             'tgl_kirim'     => $kirim ? self::tgl($kirim) : '-',
             'tgl_update'    => self::tgl($b['update']),
             'tgl_kirim_lengkap' => $kirim ? self::tgl($kirim, 'd F Y') . ' - ' . $kirim->format('H:i') . ' WIB' : '-',
@@ -279,10 +356,60 @@ class DataPermohonan
             'lampiran'      => [
                 ['nama' => 'RAB_Pengadaan.xlsx',           'ukuran' => '340 KB'],
                 ['nama' => 'KAK_Spesifikasi_Teknis.pdf',   'ukuran' => '1.2 MB'],
-                ['nama' => 'Surat_Permohonan_Ttd.pdf',     'ukuran' => '450 KB'],
             ],
             'log'           => $log,
         ];
+    }
+
+    /**
+     * Alur Perjalanan Pengadaan (10 langkah) untuk modal Lacak Pengajuan.
+     * Status tiap langkah diturunkan dari status permohonan: selesai (hijau), aktif (biru),
+     * menunggu / "Yang akan datang" (abu-abu), atau ditolak (merah).
+     *
+     * @return array<int, array{nomor:string, judul:string, peran:?string, keterangan:string, state:string}>
+     */
+    public static function alur(array $permohonan): array
+    {
+        $status = $permohonan['status'];
+
+        // Indeks langkah yang sedang berjalan; null berarti seluruh langkah sudah selesai
+        $aktifKe = ['draft' => 0, 'menunggu' => 1, 'diproses' => 3, 'revisi' => 2, 'ditolak' => 1, 'selesai' => null][$status];
+
+        // [nomor, judul, peran, keterangan saat selesai, keterangan saat aktif]
+        $langkah = [
+            ['1.',     'Permohonan Diajukan',                          'Hendra Wijaya / PPK Pengusul',         'Diajukan pada 14 Feb 2026 - 09:30 WIB',   'Permohonan belum diajukan.'],
+            ['2.',     'Persetujuan Wadir 2',                          'Dr. Ir. H. Hermawan / Wadir 2',        'Disetujui pada 15 Feb 2026 - 11:20 WIB',  'Menunggu persetujuan Wadir 2.'],
+            ['3.1',    'Perencanaan/MAK: Review',                      'Dina Rahmawati / Perencanaan',         'Disetujui pada 16 Feb 2026 - 14:00 WIB',  'Perlu revisi dari pengusul sebelum ditinjau kembali.'],
+            ['3.2',    'Perencanaan/MAK: Penentuan MAK',               'Dina Rahmawati / Perencanaan',         'Selesai ditentukan.',                      'Sedang diproses. Wadir 2 DAN Perencanaan wajib Disetujui sebelum PPBJ.'],
+            ['4.',     'PPBJ',                                         'Pokja / Tim Teknis',                   'Selesai.',                                 'Sedang diproses oleh Pokja / Tim Teknis.'],
+            ['5.',     'Review PP/PPK jika berlaku',                   'Routing dan penugasan PPK (>Rp200 juta)', 'Selesai.',                             'Sedang ditinjau.'],
+            ['6-7.',   'Proses Pengadaan dan Kontrak/SPK',             'Vendor Partner',                       'Selesai.',                                 'Sedang diproses.'],
+            ['8-9.',   'Pengiriman dan Penerimaan Barang',             'Panitia Penerima Hasil Pekerjaan',     'Selesai.',                                 'Sedang diproses.'],
+            ['10-14.', 'Dokumen, Persetujuan, dan Proses Pembayaran',  null,                                   'Selesai.',                                 'Sedang diproses.'],
+            ['15.',    'Pembayaran Selesai',                           'Sistem Administrasi PBJ',              'Selesai.',                                 'Sedang diproses.'],
+        ];
+
+        return collect($langkah)->map(function (array $l, int $indeks) use ($aktifKe, $status) {
+            $state = $aktifKe === null || $indeks < $aktifKe ? 'selesai' : ($indeks === $aktifKe ? 'aktif' : 'menunggu');
+
+            if ($state === 'aktif' && $status === 'ditolak') {
+                $state = 'ditolak';
+                $l[4] = 'Ditolak oleh Wadir 2.';
+            }
+
+            return [
+                'nomor'      => $l[0],
+                'bullet'     => $indeks >= 4,
+                'judul'      => $l[1],
+                'peran'      => $l[2],
+                'keterangan' => match ($state) {
+                    'selesai' => $l[3],
+                    'menunggu' => 'Yang akan datang',
+                    default   => $l[4],
+                },
+                'state'      => $state,
+            ];
+        })->all();
     }
 
     /** Format tanggal Indonesia, contoh: "14 Feb 2026" */

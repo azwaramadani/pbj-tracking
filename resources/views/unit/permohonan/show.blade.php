@@ -2,131 +2,247 @@
 
 @section('judul_halaman', 'Detail Permohonan')
 @section('menu_aktif', 'permohonan')
+@section('url_kembali', url()->previous(route('unit.dashboard')))
 
 @section('konten')
 
-@php
-    /*
-     * Variabel dari PermohonanController@show: $permohonan (array satu permohonan, lihat App\Support\Unit\DataPermohonan).
-     * Warna lencana tahap mengikuti status permohonan.
-     */
-    $kelasLencana = [
-        'diproses' => 'bg-[#eaf3fe] text-[#2f80ed]',
-        'menunggu' => 'bg-[#fff6e6] text-[#d87705]',
-        'selesai'  => 'bg-[#e9f6ee] text-[#1f9d5b]',
-        'draft'    => 'bg-gray-100 text-gray-500',
-    ][$permohonan['status']];
+{{--
+    Variabel dari Unit\PermohonanController@show:
+      $permohonan : satu permohonan (id, no_surat, judul, nilai_anggaran, unit, deskripsi, tgl_kirim_lengkap, lampiran[],
+                    persetujuan[wadir2|perencanaan], riwayat[]) - lihat App\Support\Unit\DataPermohonan
+      $alur       : daftar langkah "Alur Perjalanan Pengadaan" untuk modal Lacak Pengajuan
+--}}
 
-    /* Baris informasi pada kartu "Informasi Surat Permohonan": [label, isi] */
+@php
+    /* Baris "Informasi Surat Permohonan": [label, isi]. TODO Backend: isi dari kolom tabel permohonan */
     $infoSurat = [
-        ['Nomor Surat',        $permohonan['no_surat']],
-        ['Judul Pengadaan',    $permohonan['judul']],
-        ['Asal Unit Pengusul', $permohonan['unit']],
-        ['Deskripsi & Urgensi', $permohonan['deskripsi']],
-        ['Tanggal Pengajuan',  $permohonan['tgl_kirim_lengkap']],
+        ['Nomor Surat',          $permohonan['no_surat']],
+        ['Judul Pengadaan',      $permohonan['judul']],
+        ['Nilai Anggaran',       $permohonan['nilai_anggaran']],
+        ['Asal Unit Pengusul',   $permohonan['unit']],
+        ['Deskripsi & Urgensi',  $permohonan['deskripsi']],
+        ['Tanggal Pengajuan',    $permohonan['tgl_kirim_lengkap']],
     ];
 @endphp
 
-<!-- ===================== TAUTAN KEMBALI ===================== -->
-<a href="{{ route('unit.permohonan.index') }}" class="mb-6 inline-flex h-6 items-center gap-2 text-[14px] font-semibold text-brand-800 transition hover:text-brand-700">
-    <svg class="h-[18px] w-[18px]" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-    </svg>
-    Kembali ke Daftar Permohonan
-</a>
+<!-- ===================== BARIS ATAS: INFORMASI SURAT (kiri) + LAMPIRAN & STATUS PERSETUJUAN (kanan) ===================== -->
+<div class="grid grid-cols-1 gap-[26px] xl:grid-cols-[minmax(0,1fr)_376px]">
 
-<!-- ===================== BARIS ATAS: INFORMASI SURAT (kiri) + LAMPIRAN (kanan) ===================== -->
-<div class="grid grid-cols-1 gap-6 lg:grid-cols-[3fr_2fr]">
+    <!-- ---------- KARTU INFORMASI SURAT PERMOHONAN ---------- -->
+    <section class="rounded-2xl border border-gray-100 bg-white px-6 pb-[23px] pt-6 shadow-[0_1px_3px_rgba(15,23,42,0.06)]">
+        <h2 class="text-[18px] font-bold leading-6">Informasi Surat Permohonan</h2>
 
-    <!-- Kartu "Informasi Surat Permohonan" -->
-    <section class="rounded-xl border border-gray-200 bg-white p-6">
-        <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
-            <h2 class="text-[18px] font-bold">Informasi Surat Permohonan</h2>
-            <!-- Lencana tahap permohonan saat ini -->
-            <span class="inline-flex h-[22px] items-center rounded-full px-2.5 text-[12px] font-semibold {{ $kelasLencana }}">{{ $permohonan['tahap'] }}</span>
-        </div>
-
-        <!-- Daftar pasangan label (huruf kapital abu-abu) dan isi -->
-        <dl class="space-y-3.5">
+        <!-- Daftar pasangan label-isi: label kapital kecil abu-abu, isi teks biasa -->
+        <dl class="mt-[17px] space-y-[19px]">
             @foreach ($infoSurat as [$label, $isi])
                 <div>
-                    <dt class="text-[13px] uppercase leading-4 text-gray-500">{{ $label }}</dt>
-                    <dd class="mt-2 text-[14px] leading-[1.5]">{{ $isi }}</dd>
+                    <dt class="text-[12px] font-medium uppercase leading-4 text-gray-500">{{ $label }}</dt>
+                    <dd class="mt-[3px] text-[14px] leading-[21px] text-gray-900">{{ $isi }}</dd>
                 </div>
             @endforeach
         </dl>
     </section>
 
-    <!-- Kartu "Lampiran Dokumen": satu baris per berkas dengan tombol unduh -->
-    <section class="rounded-xl border border-gray-200 bg-white p-6">
-        <h2 class="mb-5 text-[18px] font-bold">Lampiran Dokumen</h2>
+    <!-- ---------- KOLOM KANAN: LAMPIRAN DOKUMEN + DUA KARTU STATUS ---------- -->
+    <div class="space-y-[14px]">
 
-        <ul class="space-y-3">
-            @foreach ($permohonan['lampiran'] as $berkas)
-                <li class="flex items-center gap-3 rounded-lg border border-gray-200 bg-surface px-3.5 py-2.5">
-                    <!-- Ikon dokumen -->
-                    <svg class="h-[18px] w-[18px] shrink-0 text-accent" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                    </svg>
+        <!-- Kartu Lampiran Dokumen: satu baris per berkas, dengan tombol unduh di kanan -->
+        <section class="rounded-2xl border border-gray-100 bg-white p-[22px] shadow-[0_1px_3px_rgba(15,23,42,0.06)]">
+            <h2 class="text-[16px] font-bold leading-6">Lampiran Dokumen</h2>
 
-                    <!-- Nama berkas dan ukurannya -->
-                    <div class="min-w-0 flex-1">
-                        <p class="truncate text-[13px] font-semibold leading-snug">{{ $berkas['nama'] }}</p>
-                        <p class="text-[12px] leading-snug text-gray-500">{{ $berkas['ukuran'] }}</p>
-                    </div>
-
-                    <!-- Tombol unduh -->
-                    <a href="#" aria-label="Unduh {{ $berkas['nama'] }}" class="shrink-0 text-brand-800 transition hover:text-brand-700">
-                        <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+            <ul class="mt-[15px] space-y-[13px]">
+                <!-- MULAI LOOP: Berkas lampiran permohonan dari database (satu iterasi = satu berkas) -->
+                @foreach ($permohonan['lampiran'] as $berkas)
+                    <li class="flex h-[53px] items-center gap-[10px] rounded-lg border border-gray-200 bg-[#f8fafc] pl-[13px] pr-[14px]">
+                        <svg class="h-[18px] w-[18px] shrink-0 text-tosca-400" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
                         </svg>
-                    </a>
-                </li>
-            @endforeach
-        </ul>
-    </section>
+                        <div class="min-w-0 flex-1">
+                            <p class="truncate text-[12px] font-bold leading-4">{{ $berkas['nama'] }}</p>
+                            <p class="text-[11px] leading-4 text-gray-500">{{ $berkas['ukuran'] }}</p>
+                        </div>
+                        <!-- TODO Backend: arahkan tautan unduh ke route download berkas (mis. Storage::download) -->
+                        <a href="#" download aria-label="Unduh {{ $berkas['nama'] }}" class="text-tosca-900 transition hover:text-tosca-600">
+                            <svg class="h-[18px] w-[18px]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                            </svg>
+                        </a>
+                    </li>
+                @endforeach
+                <!-- AKHIR LOOP: Berkas lampiran -->
+            </ul>
+        </section>
+
+        {{--
+            Dua kartu status persetujuan. URUTAN TETAP: Wadir 2 dahulu, baru Perencanaan, apa pun statusnya.
+            Backend hanya perlu mengisi nilai status (menunggu | disetujui | ditolak | revisi), nama penanggung jawab, dan waktu;
+            warna kartu serta teks lencana ditentukan otomatis oleh komponen x-unit.kartu-persetujuan.
+        --}}
+        <!-- Kartu status Wadir 2 -->
+        <x-unit.kartu-persetujuan
+            :judul="$permohonan['persetujuan']['wadir2']['judul']"
+            :subjudul="$permohonan['persetujuan']['wadir2']['subjudul']"
+            :status="$permohonan['persetujuan']['wadir2']['status']"
+            :penanggung-jawab="$permohonan['persetujuan']['wadir2']['penanggung_jawab']"
+            :waktu="$permohonan['persetujuan']['wadir2']['waktu']" />
+
+        <!-- Kartu status Perencanaan -->
+        <x-unit.kartu-persetujuan
+            :judul="$permohonan['persetujuan']['perencanaan']['judul']"
+            :subjudul="$permohonan['persetujuan']['perencanaan']['subjudul']"
+            :status="$permohonan['persetujuan']['perencanaan']['status']"
+            :penanggung-jawab="$permohonan['persetujuan']['perencanaan']['penanggung_jawab']"
+            :waktu="$permohonan['persetujuan']['perencanaan']['waktu']" />
+    </div>
 </div>
 
-<!-- ===================== KARTU "LOG PENINJAUAN SINGKAT" ===================== -->
-<section class="mt-6 rounded-xl border border-gray-200 bg-white p-6">
-    <h2 class="mb-5 text-[18px] font-bold">Log Peninjauan Singkat</h2>
+<!-- ===================== KARTU RIWAYAT AKTIVITAS ===================== -->
+<section class="mt-[26px] rounded-2xl border border-gray-100 bg-white p-6 shadow-[0_1px_3px_rgba(15,23,42,0.06)]">
 
-    <!-- Rangkaian langkah horizontal; antar langkah dipisahkan ikon panah kecil -->
-    <ol class="flex flex-wrap items-center gap-y-4">
-        @foreach ($permohonan['log'] as $langkah)
-            @php $aktif = $langkah['state'] === 'aktif'; @endphp
+    <!-- Judul kartu + tahun di sisi kanan. TODO Backend: tahun dapat dijadikan filter riwayat -->
+    <div class="flex items-center justify-between">
+        <h2 class="text-[17px] font-bold leading-6">Riwayat Aktivitas</h2>
+        <span class="pr-[1px] text-[12px] text-gray-500">2026</span>
+    </div>
 
-            <li class="flex items-center gap-3">
-                <!-- Ikon langkah: centang hijau untuk yang selesai, lingkaran biru berinti putih untuk yang sedang berjalan -->
-                @if ($aktif)
-                    <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#2f80ed]">
-                        <span class="h-2 w-2 rounded-full bg-white"></span>
-                    </span>
-                @else
-                    <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#26ae60] text-white">
-                        <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="3.2" viewBox="0 0 24 24" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                        </svg>
-                    </span>
-                @endif
+    <!-- Tabel riwayat (bisa di-scroll horizontal pada layar sempit) -->
+    <div class="mt-[14px] overflow-x-auto">
+        <table class="w-full min-w-[900px] table-fixed overflow-hidden rounded-lg border-separate border-spacing-0 border border-gray-200 text-left text-[13px]">
+            <colgroup>
+                <col class="w-[136px]">
+                <col class="w-[155px]">
+                <col class="w-[102px]">
+                <col class="w-[175px]">
+                <col class="w-[140px]">
+                <col class="w-[117px]">
+                <col>
+            </colgroup>
 
-                <!-- Judul langkah dan keterangannya; langkah aktif berwarna biru -->
-                <div>
-                    <p class="text-[14px] font-semibold leading-tight {{ $aktif ? 'text-[#2f80ed]' : '' }}">{{ $langkah['judul'] }}</p>
-                    <p class="text-[12px] leading-tight text-gray-500">{{ $langkah['keterangan'] }}</p>
-                </div>
-            </li>
+            <!-- Kepala tabel: latar abu-abu muda -->
+            <thead class="bg-[#f3f4f6] text-[12px] font-semibold text-gray-800">
+                <tr class="h-[38px]">
+                    <th class="px-3 font-semibold">Tanggal &amp; Waktu</th>
+                    <th class="px-3 font-semibold">User</th>
+                    <th class="px-3 font-semibold">Role</th>
+                    <th class="px-3 font-semibold">Aktivitas</th>
+                    <th class="px-3 font-semibold">Status Sebelumnya</th>
+                    <th class="px-3 font-semibold">Status Baru</th>
+                    <th class="px-3 font-semibold">Catatan</th>
+                </tr>
+            </thead>
 
-            <!-- Panah pemisah antar langkah (tidak ditampilkan setelah langkah terakhir) -->
-            @unless ($loop->last)
-                <li aria-hidden="true" class="mx-8 text-gray-500">
-                    <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                    </svg>
-                </li>
-            @endunless
-        @endforeach
-    </ol>
+            <tbody>
+                <!-- MULAI LOOP: Baris riwayat aktivitas dari database (satu iterasi = satu baris log perubahan status) -->
+                @foreach ($permohonan['riwayat'] as $log)
+                    <tr class="h-[56px]">
+                        <td class="border-t border-gray-200 px-3 leading-[17px]">{{ $log['waktu'] }}</td>
+                        <td class="border-t border-gray-200 px-3 leading-[17px]">{{ $log['user'] }}</td>
+                        <td class="border-t border-gray-200 px-3 leading-[17px] text-gray-400">{{ $log['role'] }}</td>
+                        <td class="border-t border-gray-200 px-3 leading-[17px]">{{ $log['aktivitas'] }}</td>
+                        <td class="border-t border-gray-200 px-3 leading-[17px] text-gray-400">{{ $log['sebelumnya'] }}</td>
+                        <td class="border-t border-gray-200 px-3 leading-[17px]">{{ $log['baru'] }}</td>
+                        <td class="border-t border-gray-200 px-3 leading-[17px] text-gray-400">{{ $log['catatan'] }}</td>
+                    </tr>
+                @endforeach
+                <!-- AKHIR LOOP: Baris riwayat aktivitas -->
+            </tbody>
+        </table>
+    </div>
 </section>
 
+<!-- ===================== TOMBOL AKSI DI BAWAH HALAMAN ===================== -->
+<div class="mt-6 flex flex-wrap gap-[17px]">
+    <!-- "Lacak Pengajuan" membuka modal Alur Perjalanan Pengadaan (diatur oleh JavaScript di bagian bawah halaman) -->
+    <button type="button" data-buka-modal="modal-tracking"
+            class="h-10 rounded-lg bg-tosca-900 px-5 text-[14px] font-semibold text-white transition hover:bg-tosca-800">Lacak Pengajuan</button>
+
+    <!-- "Revisi Pengajuan" menuju formulir revisi. TODO Backend: tampilkan hanya bila status mengizinkan revisi -->
+    <a href="{{ Route::has('unit.permohonan.revisi') ? route('unit.permohonan.revisi', $permohonan['id']) : '#' }}"
+       class="flex h-10 items-center rounded-lg border border-gray-200 bg-white px-5 text-[14px] font-semibold text-tosca-900 transition hover:bg-gray-50">Revisi Pengajuan</a>
+</div>
+
+<!-- ===================== MODAL ALUR PERJALANAN PENGADAAN (disembunyikan secara default) ===================== -->
+<div id="modal-tracking" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-900/20" role="dialog" aria-modal="true" aria-labelledby="judul-modal-tracking">
+    <div class="flex min-h-full items-center justify-center p-4">
+        <div class="w-full max-w-[665px] rounded-2xl border border-gray-200 bg-white px-[23px] pb-[14px] pt-[21px] shadow-xl">
+
+            <h2 id="judul-modal-tracking" class="text-center text-[18px] font-bold leading-6">Alur Perjalanan Pengadaan</h2>
+
+            {{--
+                Timeline vertikal. Setiap langkah punya state dari backend:
+                  selesai  = lingkaran hijau + centang
+                  aktif    = lingkaran biru + titik putih, judul berwarna biru
+                  menunggu = lingkaran abu-abu, keterangan "Yang akan datang"
+                  ditolak  = lingkaran merah + tanda silang
+                Garis penghubung vertikal digambar oleh pseudo-element pada setiap item kecuali yang terakhir.
+            --}}
+            <ol class="mt-[27px]">
+                <!-- MULAI LOOP: Langkah alur pengadaan dari database (satu iterasi = satu langkah timeline) -->
+                @foreach ($alur as $langkah)
+                    @php
+                        $kelasIkon = [
+                            'selesai'  => 'bg-[#22b35e]',
+                            'aktif'    => 'bg-[#2f7bf0]',
+                            'menunggu' => 'bg-[#e5e7eb]',
+                            'ditolak'  => 'bg-[#e5484d]',
+                        ][$langkah['state']];
+                        $kelasJudul = ['aktif' => 'text-[#2f7bf0]', 'ditolak' => 'text-[#e5484d]'][$langkah['state']] ?? 'text-gray-900';
+                    @endphp
+
+                    <li class="relative flex gap-[20px] pb-[17px] after:absolute after:left-[8px] after:top-[23px] after:-bottom-px after:w-px after:bg-gray-300 last:pb-0 last:after:hidden">
+
+                        <!-- Penanda status langkah -->
+                        <span class="relative z-10 mt-[1px] flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full {{ $kelasIkon }}">
+                            @if ($langkah['state'] === 'selesai')
+                                <svg class="h-[10px] w-[10px]" fill="none" stroke="white" stroke-width="3.5" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+                            @elseif ($langkah['state'] === 'aktif')
+                                <span class="h-[6px] w-[6px] rounded-full bg-white"></span>
+                            @elseif ($langkah['state'] === 'ditolak')
+                                <svg class="h-[9px] w-[9px]" fill="none" stroke="white" stroke-width="3.5" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6L6 18" /></svg>
+                            @endif
+                        </span>
+
+                        <!-- Teks langkah: nomor + judul (tebal), peran penanggung jawab (kecil), lalu keterangan -->
+                        <div class="min-w-0">
+                            <p class="text-[14px] font-bold leading-5 {{ $kelasJudul }}">
+                                {{ $langkah['nomor'] }} {{ $langkah['judul'] }}
+                                @if ($langkah['peran'])
+                                    <span class="ml-1.5 align-[1px] text-[11px] font-semibold text-gray-600">{{ $langkah['bullet'] ? '• ' : '' }}{{ $langkah['peran'] }}</span>
+                                @endif
+                            </p>
+                            <p class="mt-[1px] text-[12px] leading-[18px] text-gray-500">{{ $langkah['keterangan'] }}</p>
+                        </div>
+                    </li>
+                @endforeach
+                <!-- AKHIR LOOP: Langkah alur pengadaan -->
+            </ol>
+
+            <!-- Tombol penutup modal -->
+            <div class="mt-[15px] flex justify-end">
+                <button type="button" data-tutup-modal
+                        class="h-[41px] w-[102px] rounded-lg bg-tosca-900 text-[14px] font-semibold text-white transition hover:bg-tosca-800">Kembali</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection
+
+@push('skrip')
+<script>
+    // Buka/tutup modal: tombol dengan data-buka-modal membuka modal ber-id sama; Esc, klik latar, atau tombol Kembali menutupnya
+    (function () {
+        const modal = document.getElementById('modal-tracking');
+        const buka = () => { modal.classList.remove('hidden'); document.body.classList.add('overflow-hidden'); };
+        const tutup = () => { modal.classList.add('hidden'); document.body.classList.remove('overflow-hidden'); };
+
+        document.querySelectorAll('[data-buka-modal="modal-tracking"]').forEach((el) => el.addEventListener('click', buka));
+        modal.querySelectorAll('[data-tutup-modal]').forEach((el) => el.addEventListener('click', tutup));
+        modal.addEventListener('click', (e) => { if (e.target === modal || e.target === modal.firstElementChild) tutup(); });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !modal.classList.contains('hidden')) tutup(); });
+
+        // Tautan langsung: halaman dibuka dengan modal terbuka jika alamatnya berakhiran #lacak
+        if (location.hash === '#lacak') buka();
+    })();
+</script>
+@endpush

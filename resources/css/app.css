@@ -11,6 +11,26 @@
     --color-accent: #1a998a;
     --color-surface: #f8f9fb;
 
+    /* Palet tambahan desain V.2 (sidebar gradien, kepala tabel, tombol utama) */
+    --color-tosca-950: #064151;
+    --color-tosca-900: #034e5b;
+    --color-tosca-800: #0a5a68;
+    --color-tosca-600: #127f89;
+    --color-tosca-400: #1ea898;
+
     --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
+
+/* Latar halaman role User Unit V.2: gradien putih ke biru-tosca sangat muda */
+.latar-unit {
+    background:
+        radial-gradient(900px 420px at 100% 0%, #ddf7f8 0%, rgba(221, 247, 248, 0) 70%),
+        linear-gradient(160deg, #ffffff 0%, #f3f9fd 45%, #eef9fb 100%);
+}
+
+/* Gradien sidebar V.2: tosca gelap dengan sedikit lebih terang di bagian bawah */
+.sidebar-unit {
+    background: linear-gradient(180deg, #06525d 0%, #074a5a 35%, #074252 80%, #064151 100%);
+}
+

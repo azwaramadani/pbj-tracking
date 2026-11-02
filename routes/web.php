@@ -11,3 +11,4 @@ Route::view('/login', 'auth.login')->name('login');
 
 // Rute per role: setiap role punya file sendiri (routes/unit.php, nanti routes/wadir.php, dst.)
 require __DIR__.'/unit.php';
+require __DIR__.'/wadir2.php';
