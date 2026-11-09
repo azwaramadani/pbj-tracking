@@ -8,9 +8,6 @@ use Illuminate\Http\Request;
 
 class PembayaranController extends Controller
 {
-    /** Awalan nama route role pemilik halaman (PPK memakai ulang tampilan ini dengan awalan "ppk") */
-    protected string $prefixRute = 'wadir2';
-
     /** Persetujuan Paket Pembayaran: dokumen paket (kiri) serta informasi paket dan status persetujuan (kanan) */
     public function show(int $id)
     {
@@ -18,7 +15,7 @@ class PembayaranController extends Controller
 
         abort_if($paket === null, 404);
 
-        return view('wadir2.pembayaran.show', ['paket' => $paket, 'prefixRute' => $this->prefixRute]);
+        return view('wadir2.pembayaran.show', ['paket' => $paket]);
     }
 
     /** Status yang boleh dipakai pada filter tabel Daftar Permohonan */
@@ -45,7 +42,6 @@ class PembayaranController extends Controller
         $baris = $hasil->forPage($halaman, self::PER_HALAMAN)->values();
 
         return view('wadir2.pembayaran.index', [
-            'prefixRute' => $this->prefixRute,
             // TODO Backend: hitung dari database (jumlah dokumen per status untuk Wadir 2)
             'ringkasan' => [
                 ['jumlah' => 8,  'label' => "Dokumen\nDitugaskan"],

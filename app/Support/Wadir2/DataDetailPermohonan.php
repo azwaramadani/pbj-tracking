@@ -42,22 +42,12 @@ class DataDetailPermohonan
                 'penanggung_jawab' => 'Dr. Ir. H. Hermawan',
                 'waktu'            => $statusPerencanaan === 'disetujui' ? '15 Februari 2026' : 'Belum disetujui',
             ],
-            // Status persetujuan Wadir 2 (dipakai tampilan PPK pada kartu Keputusan Persetujuan paling bawah)
-            'wadir2'          => [
-                'judul'            => 'Wadir 2',
-                'subjudul'         => 'Unit Perencanaan & IT',
-                'status'           => $statusPerencanaan,
-                'penanggung_jawab' => 'Dr. Ir. H. Hermawan',
-                'waktu'            => $statusPerencanaan === 'disetujui' ? '15 Februari 2026' : 'Belum disetujui',
-            ],
         ];
 
         // Isi persis seperti mockup Detail Permohonan Wadir 2 (Perencanaan sudah menyetujui)
         if ($id === 101) {
             $data['perencanaan']['status'] = 'disetujui';
             $data['perencanaan']['waktu'] = '15 Februari 2026';
-            $data['wadir2']['status'] = 'disetujui';
-            $data['wadir2']['waktu'] = '15 Februari 2026';
             $data = array_merge($data, [
                 'nomor_surat'    => '920/UN25.3.1/PBJ/2026',
                 'unit_pengaju'   => 'Fakultas Teknik - Jurusan Informatika',

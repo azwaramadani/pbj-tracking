@@ -8,14 +8,12 @@
 
 @php
     /*
-     * Menu sidebar Wadir 2: sama seperti User Unit, tetapi "Permohonan" diganti "Pembayaran", ditambah "Permohonan MAK" di antara Dashboard dan Pembayaran.
+     * Menu sidebar Wadir 2: sama seperti User Unit, tetapi "Permohonan" diganti "Pembayaran".
      * Rute yang belum dibuat otomatis diarahkan ke "#" oleh layout dasar.
      */
     $menuSidebar = [
         ['kunci' => 'dashboard',  'label' => 'Dashboard',  'rute' => 'wadir2.dashboard',
          'ikon'  => 'M3.75 15.75a8.25 8.25 0 1116.5 0M12 15.75l3-4.5'],
-        ['kunci' => 'permohonan-mak', 'label' => 'Permohonan MAK', 'rute' => 'wadir2.mak.index',
-         'ikon'  => 'M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z'],
         ['kunci' => 'pembayaran', 'label' => 'Pembayaran', 'rute' => 'wadir2.pembayaran.index',
          'ikon'  => 'M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z'],
         ['kunci' => 'notifikasi', 'label' => 'Notifikasi', 'rute' => 'wadir2.notifikasi.index', 'badge' => 3,

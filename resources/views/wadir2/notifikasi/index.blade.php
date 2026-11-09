@@ -1,0 +1,11 @@
+@extends('layouts.wadir2')
+
+@section('judul_halaman', 'Notifikasi')
+@section('menu_aktif', 'notifikasi')
+
+{{-- Header Notifikasi digambar di dalam komponen, jadi header standar layout diganti komentar ini --}}
+@section('header_halaman')<!-- Header halaman dirender oleh komponen notifikasi-panel -->@endsection
+
+@section('konten')
+<x-notifikasi-panel :notifications="$notifikasi" :tab-counts="$jumlahTab" :active-tab="$tabAktif" route-prefix="wadir2.notifikasi" />
+@endsection

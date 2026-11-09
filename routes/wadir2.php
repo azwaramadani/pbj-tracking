@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\Wadir2\DashboardController;
-use App\Http\Controllers\Wadir2\MakController;
 use App\Http\Controllers\Wadir2\NotifikasiController;
 use App\Http\Controllers\Wadir2\PembayaranController;
 use App\Http\Controllers\Wadir2\PermohonanController;
@@ -20,10 +19,6 @@ Route::prefix('wadir2')->name('wadir2.')->group(function () {
 
     // Detail Permohonan (dibuka dari tombol "Detail" di Dashboard) lengkap dengan modal Konfirmasi Persetujuan
     Route::get('/permohonan/{id}', [PermohonanController::class, 'show'])->whereNumber('id')->name('permohonan.show');
-
-    // Permohonan MAK: dashboard daftar permohonan + detail (dua tampilan: tinjau dan selesai)
-    Route::get('/permohonan-mak', [MakController::class, 'index'])->name('mak.index');
-    Route::get('/permohonan-mak/{id}', [MakController::class, 'show'])->whereNumber('id')->name('mak.show');
 
     // Tab "Pembayaran": kartu ringkasan paket pembayaran + Daftar Permohonan dengan jenis dan nilai pengadaan
     Route::get('/pembayaran', [PembayaranController::class, 'index'])->name('pembayaran.index');

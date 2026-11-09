@@ -1,8 +1,8 @@
-@extends('layouts.'.$prefixRute)
+@extends('layouts.wadir2')
 
 @section('judul_halaman', 'Persetujuan Paket Pembayaran')
-@section('menu_aktif', $menuAktif ?? 'pembayaran')
-@section('url_kembali', $urlKembali ?? route($prefixRute.'.pembayaran.index'))
+@section('menu_aktif', 'pembayaran')
+@section('url_kembali', route('wadir2.pembayaran.index'))
 @section('breadcrumb_ekstra', 'Persetujuan Paket Pembayaran')
 @section('pil_ta_abu', '1')
 
@@ -114,22 +114,20 @@
             :waktu="$paket['wadir2']['waktu']"
             kelas-kolom="grid-cols-[133px_1fr]" />
 
-        <!-- Kartu status kedua: Perencanaan (default). Tracking PPK memakai kunci "kartu_ppk" lewat variabel $kartuKedua (kartu PPK) -->
-        @php $kartuKedua = $paket[$kartuKedua ?? 'perencanaan']; @endphp
+        <!-- Kartu status Perencanaan -->
         <x-unit.kartu-persetujuan
-            :judul="$kartuKedua['judul']"
-            :subjudul="$kartuKedua['subjudul']"
-            :status="$kartuKedua['status']"
-            :penanggung-jawab="$kartuKedua['penanggung_jawab']"
-            :waktu="$kartuKedua['waktu']"
+            :judul="$paket['perencanaan']['judul']"
+            :subjudul="$paket['perencanaan']['subjudul']"
+            :status="$paket['perencanaan']['status']"
+            :penanggung-jawab="$paket['perencanaan']['penanggung_jawab']"
+            :waktu="$paket['perencanaan']['waktu']"
             kelas-kolom="grid-cols-[133px_1fr]" />
 
         <!--
-            Area aksi: tombol "Tentukan Keputusan" hanya tampil selama persetujuan belum lengkap ($paket['bisa_memutuskan'])
-            dan hanya untuk Wadir 2; role PPK hanya melihat status kedua kartu di atas (tanpa tombol dan tanpa modal).
+            Area aksi: tombol "Tentukan Keputusan" hanya tampil selama persetujuan belum lengkap ($paket['bisa_memutuskan']).
             Tombol hanya MEMBUKA modal; pengiriman keputusan terjadi lewat form POST di dalam modal Konfirmasi Persetujuan di bawah.
         -->
-        @if ($paket['bisa_memutuskan'] && $prefixRute === 'wadir2')
+        @if ($paket['bisa_memutuskan'])
             <button type="button" data-buka-modal="modal-konfirmasi"
                     class="h-10 w-full rounded-lg bg-tosca-900 text-[14px] font-semibold text-white transition hover:bg-tosca-800">Tentukan Keputusan</button>
         @endif
@@ -137,7 +135,7 @@
 </div>
 
 <!-- Modal Konfirmasi Persetujuan (komponen bersama dengan halaman Detail Permohonan; disembunyikan secara default) -->
-@if ($paket['bisa_memutuskan'] && $prefixRute === 'wadir2')
+@if ($paket['bisa_memutuskan'])
     <x-wadir2.konfirmasi-persetujuan :record-id="$paket['id']" field-name="paket_id" />
 @endif
 

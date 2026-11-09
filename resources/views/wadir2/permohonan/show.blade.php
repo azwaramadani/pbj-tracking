@@ -1,8 +1,8 @@
-@extends('layouts.'.$prefixRute)
+@extends('layouts.wadir2')
 
 @section('judul_halaman', 'Detail Permohonan')
 @section('menu_aktif', 'dashboard')
-@section('url_kembali', route($prefixRute.'.dashboard'))
+@section('url_kembali', route('wadir2.dashboard'))
 
 @section('konten')
 
@@ -110,23 +110,7 @@
                     class="mt-[26px] h-10 w-full rounded-lg bg-tosca-900 text-[14px] font-semibold text-white transition hover:bg-tosca-800">Tentukan Keputusan</button>
         </section>
 
-        @if ($prefixRute === 'ppk')
-            <!-- [PPK] Kartu Keputusan Persetujuan (2): hanya menampilkan status persetujuan Wadir 2 (tanpa tombol "Kirim Ke PPBJ") -->
-            <section class="rounded-2xl border border-gray-100 bg-white p-6 shadow-[0_1px_3px_rgba(15,23,42,0.06)]">
-                <h2 class="text-[16px] font-bold leading-6 text-brand-800">Keputusan Persetujuan</h2>
-
-                <div class="mt-[14px]">
-                    <x-unit.kartu-persetujuan
-                        :judul="$permohonan['wadir2']['judul']"
-                        :subjudul="$permohonan['wadir2']['subjudul']"
-                        :status="$permohonan['wadir2']['status']"
-                        :penanggung-jawab="$permohonan['wadir2']['penanggung_jawab']"
-                        :waktu="$permohonan['wadir2']['waktu']"
-                        kelas-kolom="grid-cols-[133px_1fr]" />
-                </div>
-            </section>
-        @else
-        <!-- [Wadir 2] Kartu Keputusan Persetujuan (2): status persetujuan Perencanaan + tombol "Kirim Ke PPBJ" -->
+        <!-- Kartu Keputusan Persetujuan (2): status persetujuan Perencanaan + tombol "Kirim Ke PPBJ" -->
         <section class="rounded-2xl border border-gray-100 bg-white p-6 shadow-[0_1px_3px_rgba(15,23,42,0.06)]">
             <h2 class="text-[16px] font-bold leading-6 text-brand-800">Keputusan Persetujuan</h2>
 
@@ -151,7 +135,6 @@
                 <button type="submit" class="h-10 w-full rounded-lg bg-tosca-900 text-[14px] font-semibold text-white transition hover:bg-tosca-800">Kirim Ke PPBJ</button>
             </form>
         </section>
-        @endif
     </div>
 </div>
 
