@@ -9,6 +9,7 @@
      * 'kunci' dicocokkan dengan section menu_aktif pada halaman anak untuk menandai menu yang sedang dibuka.
      * 'rute'  diisi nama route; jika route belum dibuat, tautan sementara diarahkan ke "#".
      * 'badge' (opsional) menampilkan lencana merah berisi jumlah, mis. notifikasi belum dibaca.
+     * Item berbentuk ['grup' => 'NAMA GRUP'] (tanpa 'kunci') dirender sebagai judul kelompok menu (dipakai layout Super Admin).
      */
     $menuSidebar ??= [
         ['kunci' => 'dashboard',  'label' => 'Dashboard',  'rute' => 'unit.dashboard',
@@ -29,6 +30,11 @@
     $labelModul ??= 'Modul User';
     $breadcrumb ??= 'SIMPATIK-PBJ / User';
     $kelasPilTa ??= 'border-[#aac2c7] bg-[#cad9de] text-brand-800';
+
+    /* Teks pil di samping judul, serta tinggi dan jarak item menu (layout dengan menu panjang bisa memadatkannya) */
+    $teksPilTa ??= 'TA 2026 - AKTIF';
+    $tinggiMenu ??= 'h-[42px]';
+    $jarakMenu ??= 'space-y-[5px]';
 
     /*
      * TODO Backend: ganti data contoh ini dengan pengguna yang sedang login (auth()->user()).
@@ -68,11 +74,16 @@
         </div>
 
         <!-- Daftar menu navigasi: menu yang sedang dibuka diberi latar tosca terang -->
-        <nav class="relative mt-[17px] space-y-[5px] pl-[19px] pr-3">
+        <nav class="relative mt-[17px] min-h-0 flex-1 overflow-y-auto pl-[19px] pr-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden {{ $jarakMenu }}">
             @foreach ($menuSidebar as $menu)
+                {{-- Judul kelompok menu (mis. MASTER DATA) --}}
+                @isset($menu['grup'])
+                    <p class="px-1 pb-0.5 pt-3 text-[10px] font-bold uppercase tracking-wide text-white/55">{{ $menu['grup'] }}</p>
+                    @continue
+                @endisset
                 @php $aktif = $menu['kunci'] === $menuAktif; @endphp
                 <a href="{{ Route::has($menu['rute']) ? route($menu['rute']) : '#' }}"
-                   class="flex h-[42px] items-center gap-3 rounded-lg px-4 text-[15px] transition
+                   class="flex {{ $tinggiMenu }} items-center gap-3 rounded-lg px-4 text-[15px] transition
                           {{ $aktif ? 'bg-tosca-600 font-medium text-white' : 'text-white/80 hover:bg-white/5 hover:text-white' }}">
                     <svg class="h-[19px] w-[19px] shrink-0" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" d="{{ $menu['ikon'] }}" />
@@ -93,7 +104,7 @@
                 <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-tosca-400 text-[14px] font-bold">{{ $penggunaLogin['inisial'] }}</div>
                 <div class="min-w-0">
                     <p class="truncate text-[13px] font-bold leading-tight">{{ $penggunaLogin['nama'] }}</p>
-                    <p class="mt-1 truncate text-[10px] leading-tight text-white/60">NIP. {{ $penggunaLogin['nip'] }}</p>
+                    <p class="mt-1 truncate text-[10px] leading-tight text-white/60">{{ $penggunaLogin['keterangan'] ?? 'NIP. '.$penggunaLogin['nip'] }}</p>
                 </div>
             </div>
         </div>
@@ -129,7 +140,7 @@
                     @endif
                     <h1 class="text-[25px] font-bold leading-[34px]">@yield('judul_halaman', 'Dashboard')</h1>
                     <!-- Badge tahun anggaran aktif. TODO Backend: ambil dari pengaturan periode anggaran yang aktif -->
-                    <span class="rounded-md border px-[20px] py-[3px] text-[13px] font-semibold {{ $kelasPilTa }}">TA 2026 - AKTIF</span>
+                    <span class="rounded-md border px-[20px] py-[3px] text-[13px] font-semibold {{ $kelasPilTa }}">{{ $teksPilTa }}</span>
                 </div>
 
                 <!-- Kotak tanggal di pojok kanan atas. Sudah dirender dinamis oleh PHP (variabel tanggalHariIni di atas) -->
@@ -137,6 +148,11 @@
                     {{ $tanggalHariIni }}
                 </div>
             </div>
+
+            {{-- Deskripsi singkat halaman di bawah judul (opsional, diisi section deskripsi_halaman) --}}
+            @hasSection('deskripsi_halaman')
+                <p class="mt-1 text-[13px] text-gray-600">@yield('deskripsi_halaman')</p>
+            @endif
         </header>
         @endif
 

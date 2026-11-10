@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
+    protected string $prefixRute = 'wadir2';
+
     /** Status yang boleh dipakai pada filter tabel Daftar Pengajuan */
     private const FILTER_STATUS = ['draft', 'menunggu', 'diproses', 'selesai', 'revisi', 'ditolak'];
 
@@ -35,6 +37,7 @@ class DashboardController extends Controller
         $baris = $hasil->forPage($halaman, self::PER_HALAMAN)->values();
 
         return view('wadir2.dashboard', [
+            'prefixRute' => $this->prefixRute,
             // TODO Backend: hitung dari database (jumlah permohonan per status)
             'ringkasan' => [
                 ['jumlah' => 8,  'label' => "Menunggu\nProses"],

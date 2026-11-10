@@ -3,14 +3,14 @@
 namespace App\Http\Controllers\Ppk;
 
 use App\Http\Controllers\Controller;
-use App\Support\Keuangan\DataPenerimaan;
-use App\Support\Ppk\DataTahap;
+use App\Http\Controllers\Concerns\TampilTahapTracking;
 use App\Support\Ppk\DataTracking;
-use App\Support\Wadir2\DataPembayaran;
 use Illuminate\Http\Request;
 
 class TrackingController extends Controller
 {
+    use TampilTahapTracking;
+
     /** Status yang boleh dipakai pada filter tabel Daftar Pengajuan */
     private const FILTER_STATUS = ['revisi', 'diproses', 'selesai', 'draft', 'ditolak', 'pembayaran'];
 
@@ -67,47 +67,9 @@ class TrackingController extends Controller
         return view('ppk.tracking.show', ['pengajuan' => $pengajuan]);
     }
 
-    /**
-     * Detail satu tahap pada "Alur Perjalanan Pengadaan" (dibuka dengan mengklik tahap di Detail Tracking).
-     * Hanya tahap yang sudah selesai atau sedang berjalan yang dapat dibuka; tahap "Yang akan datang" mengembalikan 404.
-     * Tahap 9 dan 10 memakai ulang tampilan Persetujuan Paket Pembayaran (Wadir 2) dan Dokumentasi Penerimaan selesai (Keuangan).
-     */
+    /** Detail satu tahap pada Alur Perjalanan (logika bersama PPK dan Super Admin ada di trait TampilTahapTracking) */
     public function tahap(int $id, int $nomor)
     {
-        $pengajuan = DataTracking::cari($id);
-        abort_if($pengajuan === null || $nomor < 1 || $nomor > 10, 404);
-
-        $state = $pengajuan['alur'][$nomor - 1]['state'];
-        abort_if($state === 'menunggu', 404);
-
-        // Semua halaman tahap memakai menu "Tracking" dan tombol kembali ke Detail Tracking
-        $umum = [
-            'pengajuan'  => $pengajuan,
-            'tahap'      => $pengajuan['alur'][$nomor - 1],
-            'urlKembali' => route('ppk.tracking.show', $id),
-            'menuAktif'  => 'tracking',
-        ];
-
-        return match (true) {
-            $nomor <= 3 => view('ppk.tracking.tahap.permohonan', $umum + DataTahap::permohonan($nomor, $state)),
-            $nomor <= 5 => view('ppk.tracking.tahap.memo', $umum + DataTahap::memo() + ['tampilKeputusan' => $nomor === 5]),
-            $nomor === 6 => view('ppk.tracking.tahap.review', $umum + DataTahap::review() + ['state' => $state]),
-            $nomor === 7 => view('ppk.tracking.tahap.kontrak', $umum + ['kontrak' => DataTahap::kontrak()]),
-            $nomor === 8 => view('ppk.tracking.tahap.penerimaan', $umum + ['penerimaan' => DataTahap::penerimaan()]),
-            // Tahap 9: halaman Persetujuan Paket Pembayaran milik Wadir 2 dengan kartu status kedua = PPK (id 203 = Wadir 2 dan Perencanaan sudah disetujui)
-            $nomor === 9 => view('wadir2.pembayaran.show', $umum + [
-                'prefixRute' => 'ppk',
-                'kartuKedua' => 'kartu_ppk',
-                'paket'      => DataPembayaran::cari(203) + ['kartu_ppk' => [
-                    'judul' => 'PPK', 'subjudul' => 'Unit Perencanaan & IT', 'status' => 'disetujui',
-                    'penanggung_jawab' => 'Dr. Ir. H. Hermawan', 'waktu' => '15 Februari 2026',
-                ]],
-            ]),
-            // Tahap 10: halaman Dokumentasi Penerimaan (keadaan selesai) milik Keuangan (id 503 = pembayaran selesai)
-            default => view('keuangan.pembayaran.show', $umum + [
-                'layoutRole' => 'ppk',
-                'pembayaran' => DataPenerimaan::cari(503),
-            ]),
-        };
+        return $this->tampilTahap($id, $nomor, 'ppk', route('ppk.tracking.show', $id), 'tracking');
     }
 }

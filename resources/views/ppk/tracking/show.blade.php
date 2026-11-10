@@ -1,13 +1,15 @@
-@extends('layouts.ppk')
+@extends('layouts.'.($layoutRole ?? 'ppk'))
 
 @section('judul_halaman', 'Detail Permohonan')
-@section('menu_aktif', 'tracking')
-@section('url_kembali', route('ppk.tracking.index'))
+@section('menu_aktif', $menuAktif ?? 'tracking')
+@section('url_kembali', $urlKembali ?? route('ppk.tracking.index'))
 
 @section('konten')
 
 {{--
     Detail Tracking PPK - informasi pengadaan (kiri) dan "Alur Perjalanan Pengadaan" 10 tahap (kanan).
+    Dipakai juga oleh Super Admin (Detail dari Dashboard): kirim $layoutRole = 'admin', $menuAktif, $urlKembali,
+    dan $rutePerTahap = 'admin.dashboard.tahap' agar tahap membuka detail tahap versi Super Admin.
     Variabel dari Ppk\TrackingController@show:
       $pengajuan : id, status, nomor_surat, unit_pengaju, judul, tujuan, total_anggaran,
                    alur[] (tiap item: nomor, judul, pelaku, state, teks) - lihat App\Support\Ppk\DataTracking
@@ -87,7 +89,7 @@
                     <!-- Teks tahap: judul bernomor (biru bila aktif) + pelaku, lalu keterangan. Tahap selesai/berjalan berupa tautan ke detail tahap; tahap "Yang akan datang" bukan tautan -->
                     @php $bisaDibuka = $tahap['state'] !== 'menunggu'; @endphp
                     <{{ $bisaDibuka ? 'a' : 'div' }}
-                        @if ($bisaDibuka) href="{{ route('ppk.tracking.tahap', [$pengajuan['id'], $tahap['nomor']]) }}" @endif
+                        @if ($bisaDibuka) href="{{ route($rutePerTahap ?? 'ppk.tracking.tahap', [$pengajuan['id'], $tahap['nomor']]) }}" @endif
                         class="block min-w-0 flex-1 px-2 py-[6px] {{ $loop->even ? 'bg-[#f5f7f8]' : '' }} {{ $bisaDibuka ? 'cursor-pointer transition hover:bg-[#eef5f6]' : '' }}">
                         <p class="flex flex-wrap items-baseline gap-x-2 leading-5">
                             <span class="text-[13.5px] font-bold {{ $aktif ? 'text-[#2f80ed]' : 'text-gray-900' }}">{{ $tahap['nomor'] }}. {{ $tahap['judul'] }}</span>

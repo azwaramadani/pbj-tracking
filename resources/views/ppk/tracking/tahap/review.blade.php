@@ -1,4 +1,4 @@
-@extends('layouts.ppk')
+@extends('layouts.'.($layoutRole ?? 'ppk'))
 
 @section('judul_halaman', 'Detail Pengadaan')
 @section('menu_aktif', $menuAktif)

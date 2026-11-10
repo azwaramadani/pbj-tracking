@@ -1,4 +1,4 @@
-@extends('layouts.ppk')
+@extends('layouts.'.($layoutRole ?? 'ppk'))
 
 @section('judul_halaman', 'Detail Kontrak')
 @section('menu_aktif', $menuAktif)
@@ -12,6 +12,8 @@
     Variabel dari Ppk\TrackingController@tahap: $kontrak - lihat App\Support\Ppk\DataTahap::kontrak()
       judul, kode, unit, nilai, ppk, pengadaan_id, informasi[] (pasangan [label, isi]), pengingat[] (pasangan [label, isi]),
       status_barang, dokumen[] (judul, keterangan)
+    Dipakai juga oleh role PPBJ (Detail Kontrak): kirim $layoutRole = 'ppbj' dan $kontrak['id'] + $kontrak['status'] (tinjauan | diproses | selesai);
+    tombol utama di bawah ringkasan berubah menurut status.
 --}}
 
 @php
@@ -43,9 +45,24 @@
             </div>
         </dl>
 
-        <!-- Tombol "Lihat Pengadaan": membuka Detail Pengadaan terkait. TODO Backend: ganti id contoh dengan id pengadaan milik kontrak -->
-        <a href="{{ route('ppk.pengadaan.show', $kontrak['pengadaan_id']) }}"
-           class="mt-4 flex h-[38px] w-full items-center justify-center rounded-lg border border-gray-200 bg-white text-[13px] font-semibold text-brand-800 transition hover:bg-gray-50">Lihat Pengadaan</a>
+        @if (($layoutRole ?? 'ppk') === 'ppbj')
+            {{--
+                Tombol utama PPBJ menurut status kontrak:
+                  'tinjauan'            : "Unggah Dokumen" -> form Unggah / Edit Kontrak & SPK (ppbj.kontrak.edit)
+                  'diproses' / 'selesai': "Lihat Penerimaan" -> Dokumentasi Penerimaan versi hanya-baca (ppbj.kontrak.penerimaan)
+            --}}
+            @if ($kontrak['status'] === 'tinjauan')
+                <a href="{{ route('ppbj.kontrak.edit', $kontrak['id']) }}"
+                   class="mt-4 flex h-[38px] w-full items-center justify-center rounded-lg bg-tosca-900 text-[13px] font-semibold text-white transition hover:bg-tosca-800">Unggah Dokumen</a>
+            @else
+                <a href="{{ route('ppbj.kontrak.penerimaan', $kontrak['id']) }}"
+                   class="mt-4 flex h-[38px] w-full items-center justify-center rounded-lg bg-tosca-900 text-[13px] font-semibold text-white transition hover:bg-tosca-800">Lihat Penerimaan</a>
+            @endif
+        @elseif (($layoutRole ?? 'ppk') === 'ppk')
+            <!-- Tombol "Lihat Pengadaan" (hanya PPK; Detail Pengadaan milik modul PPK): membuka Detail Pengadaan terkait. TODO Backend: ganti id contoh dengan id pengadaan milik kontrak -->
+            <a href="{{ route('ppk.pengadaan.show', $kontrak['pengadaan_id']) }}"
+               class="mt-4 flex h-[38px] w-full items-center justify-center rounded-lg border border-gray-200 bg-white text-[13px] font-semibold text-brand-800 transition hover:bg-gray-50">Lihat Pengadaan</a>
+        @endif
 
         <!-- Kartu Informasi Kontrak: pasangan label (abu-abu) dan isi -->
         <div class="mt-4 rounded-xl border border-gray-200 px-6 pb-5 pt-5">

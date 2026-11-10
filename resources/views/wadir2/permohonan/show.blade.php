@@ -1,8 +1,8 @@
-@extends('layouts.wadir2')
+@extends('layouts.'.$prefixRute)
 
 @section('judul_halaman', 'Detail Permohonan')
 @section('menu_aktif', 'dashboard')
-@section('url_kembali', route('wadir2.dashboard'))
+@section('url_kembali', route($prefixRute.'.dashboard'))
 
 @section('konten')
 
@@ -125,15 +125,17 @@
                     kelas-kolom="grid-cols-[133px_1fr]" />
             </div>
 
-            {{--
-                TODO Backend: isi action dengan route yang meneruskan permohonan ke PPBJ.
-                Paket hanya boleh diteruskan setelah persetujuan Wadir 2 DAN Perencanaan selesai; validasi di sisi server.
-            --}}
-            <form method="POST" action="" class="mt-4">
-                @csrf
-                <input type="hidden" name="permohonan_id" value="{{ $permohonan['id'] }}">
-                <button type="submit" class="h-10 w-full rounded-lg bg-tosca-900 text-[14px] font-semibold text-white transition hover:bg-tosca-800">Kirim Ke PPBJ</button>
-            </form>
+            @if ($prefixRute === 'wadir2')
+                {{--
+                    TODO Backend: isi action dengan route yang meneruskan permohonan ke PPBJ.
+                    Paket hanya boleh diteruskan setelah persetujuan Wadir 2 DAN Perencanaan selesai; validasi di sisi server.
+                --}}
+                <form method="POST" action="" class="mt-4">
+                    @csrf
+                    <input type="hidden" name="permohonan_id" value="{{ $permohonan['id'] }}">
+                    <button type="submit" class="h-10 w-full rounded-lg bg-tosca-900 text-[14px] font-semibold text-white transition hover:bg-tosca-800">Kirim Ke PPBJ</button>
+                </form>
+            @endif
         </section>
     </div>
 </div>

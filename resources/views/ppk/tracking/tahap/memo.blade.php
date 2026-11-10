@@ -1,4 +1,4 @@
-@extends('layouts.ppk')
+@extends('layouts.'.($layoutRole ?? 'ppk'))
 
 @section('judul_halaman', 'Detail Permohonan')
 @section('menu_aktif', $menuAktif)
@@ -11,6 +11,7 @@
       $tampilKeputusan = false (tahap 4): kolom kanan = Identitas Pengaju + Form Alokasi Anggaran (MAK)
       $tampilKeputusan = true  (tahap 5): ditambah kartu "Keputusan Persetujuan" berisi memo persetujuan Wadir 2 dan PPK
     Variabel dari Ppk\TrackingController@tahap: $permohonan (lihat App\Support\Wadir2\DataMak), $memo[], $tampilKeputusan
+    Dipakai juga oleh role PPBJ (Detail Permohonan, tombol "Lihat Permohonan"): kirim $layoutRole = 'ppbj' agar layout/sidebar PPBJ yang dipakai.
 --}}
 
 <!-- ===================== BARIS UTAMA: INFORMASI & LAMPIRAN (kiri) + IDENTITAS, KEPUTUSAN & ANGGARAN (kanan) ===================== -->

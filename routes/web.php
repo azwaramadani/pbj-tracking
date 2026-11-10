@@ -15,3 +15,7 @@ require __DIR__.'/wadir2.php';
 require __DIR__.'/pp.php';
 require __DIR__.'/keuangan.php';
 require __DIR__.'/ppk.php';
+require __DIR__.'/perencanaan.php';
+require __DIR__.'/penerimaan.php';
+require __DIR__.'/ppbj.php';
+require __DIR__.'/admin.php';

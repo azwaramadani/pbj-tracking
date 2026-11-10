@@ -1,4 +1,4 @@
-@extends('layouts.wadir2')
+@extends('layouts.'.$prefixRute)
 
 @section('judul_halaman', 'Dashboard PP')
 @section('menu_aktif', 'pembayaran')
@@ -64,7 +64,7 @@
             Form pencarian + filter memakai method GET agar hasilnya bisa di-bookmark dan tidak butuh token CSRF.
             Backend membaca parameter "q" (nomor surat) dan "status" lalu menyaring query daftar permohonan.
         --}}
-        <form method="GET" action="{{ route('wadir2.pembayaran.index') }}" class="flex items-center gap-[12px]">
+        <form method="GET" action="{{ route($prefixRute.'.pembayaran.index') }}" class="flex items-center gap-[12px]">
 
             <!-- Kolom pencarian nomor surat dengan ikon kaca pembesar -->
             <div class="relative">
@@ -162,7 +162,7 @@
 
                         <!-- Kolom 6: tombol "Detail" menuju halaman Detail Permohonan Wadir 2 (tautan "#" sampai route-nya dibuat) -->
                         <td>
-                            <a href="{{ route('wadir2.pembayaran.show', $baris['id']) }}"
+                            <a href="{{ route($prefixRute.'.pembayaran.show', $baris['id']) }}"
                                class="inline-flex h-[34px] w-[75px] items-center justify-center rounded-md bg-tosca-900 text-[14px] font-semibold text-white transition hover:bg-tosca-800">Detail</a>
                         </td>
                     </tr>
