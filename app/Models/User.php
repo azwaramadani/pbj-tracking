@@ -1,29 +1,36 @@
 <?php
 
-
 namespace App\Models;
 
-use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable([
-    'Username',
-    'Password',
-    'Nama_lengkap',
-    'Id_role',
-    'Asal_unit_bagian',
-])]
-#[Hidden(['Password', 'remember_token'])]
 class User extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
+    protected $table = 'users';
+
     protected $primaryKey = 'Id_user';
+
+    protected $keyType = 'int';
+
+    public $incrementing = true;
+
+    protected $fillable = [
+        'Email_user',
+        'Password',
+        'Nama_lengkap',
+        'Id_role',
+        'Asal_unit',
+    ];
+
+    protected $hidden = [
+        'Password',
+        'remember_token',
+    ];
 
     public function getAuthPasswordName(): string
     {
@@ -35,5 +42,14 @@ class User extends Authenticatable
         return [
             'Password' => 'hashed',
         ];
+    }
+
+    public function role(): BelongsTo
+    {
+        return $this->belongsTo(
+            Role::class,
+            'Id_role',
+            'Id_role'
+        );
     }
 }

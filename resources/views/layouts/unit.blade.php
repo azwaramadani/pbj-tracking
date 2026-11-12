@@ -40,7 +40,25 @@
      * TODO Backend: ganti data contoh ini dengan pengguna yang sedang login (auth()->user()).
      * Jumlah badge Notifikasi di atas juga harus berasal dari jumlah notifikasi yang belum dibaca.
      */
-    $penggunaLogin ??= ['nama' => 'Mahfudh Al Rafif', 'nip' => '198503212010121002', 'inisial' => 'PP'];
+
+$penggunaAktif = auth()->user();
+
+$namaPengguna = $penggunaAktif?->Nama_lengkap ?? 'Pengguna';
+
+$kataNama = preg_split('/\s+/', trim($namaPengguna));
+
+$inisialPengguna = collect($kataNama)
+    ->filter()
+    ->take(2)
+    ->map(fn ($kata) => mb_strtoupper(mb_substr($kata, 0, 1)))
+    ->implode('');
+
+$penggunaLogin = [
+    'nama' => $namaPengguna,
+    'inisial' => $inisialPengguna ?: 'U',
+    'keterangan' => $penggunaAktif?->Email_user ?? 'Email belum tersedia',
+];
+
 
     /* TODO Backend: tanggal ini sudah dirender dinamis lewat Carbon; sesuaikan zona waktu aplikasi (config/app.php) bila perlu */
     $tanggalHariIni = \Illuminate\Support\Carbon::now()->locale('id')->translatedFormat('l, d M Y');
@@ -98,17 +116,46 @@
             @endforeach
         </nav>
 
-        <!-- Kartu pengguna di dasar sidebar: avatar inisial, nama, dan NIP -->
-        <div class="relative mt-auto pb-5 pl-[15px] pr-[17px]">
-            <div class="flex items-center gap-3 rounded-xl border border-white/20 bg-[#126577] px-3 py-[11px]">
-                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-tosca-400 text-[14px] font-bold">{{ $penggunaLogin['inisial'] }}</div>
-                <div class="min-w-0">
-                    <p class="truncate text-[13px] font-bold leading-tight">{{ $penggunaLogin['nama'] }}</p>
-                    <p class="mt-1 truncate text-[10px] leading-tight text-white/60">{{ $penggunaLogin['keterangan'] ?? 'NIP. '.$penggunaLogin['nip'] }}</p>
+
+            <!-- Kartu pengguna di dasar sidebar: avatar inisial, nama, dan NIP -->
+            <div class="relative mt-auto pb-5 pl-[15px] pr-[17px]">
+                <div class="flex items-center gap-3 rounded-xl border border-white/20 bg-[#126577] px-3 py-[11px]">
+                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-tosca-400 text-[14px] font-bold">
+                        {{ $penggunaLogin['inisial'] }}
+                    </div>
+
+                    <div class="min-w-0">
+                        <p class="truncate text-[13px] font-bold leading-tight">
+                            {{ $penggunaLogin['nama'] }}
+                        </p>
+                        <p class="mt-1 truncate text-[10px] leading-tight text-white/60">
+                            {{ $penggunaLogin['keterangan'] ?? 'NIP. '.$penggunaLogin['nip'] }}
+                        </p>
+                    </div>
                 </div>
+
+                <!-- Tombol Logout -->
+                <form action="{{ route('logout') }}" method="POST" class="mt-3">
+                    @csrf
+                    <button
+                        type="submit"
+                        class="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-medium text-white/80 transition hover:bg-red-500/20 hover:text-white"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                            class="h-5 w-5 shrink-0"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            stroke-width="1.8">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6A2.25 2.25 0 005.25 5.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M18 15l3-3m0 0l-3-3m3 3H9" />
+                        </svg>
+                        <span>Logout</span>
+                    </button>
+                </form>
             </div>
-        </div>
-    </aside>
+        </aside>
+
 
     <!-- ===================== AREA KONTEN UTAMA ===================== -->
     <div class="relative flex min-w-0 flex-1 flex-col px-6 pb-8 pt-6">

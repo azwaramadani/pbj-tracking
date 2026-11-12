@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 use App\Http\Controllers\Unit\DashboardController;
 use App\Http\Controllers\Unit\DokumenController;
@@ -14,7 +14,10 @@ use Illuminate\Support\Facades\Route;
  * sehingga role lain (mis. wadir, perencanaan, keuangan) bisa punya dashboard sendiri
  * lewat file rute terpisah tanpa bentrok. Nanti tambahkan middleware role di group ini.
  */
-Route::prefix('unit')->name('unit.')->group(function () {
+Route::prefix('unit')
+    ->name('unit.')
+    ->middleware(['auth', 'role:User Unit'])
+    ->group(function () {
 
     // Halaman utama setelah masuk
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');

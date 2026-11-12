@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 use App\Http\Controllers\Ppk\DashboardController;
 use App\Http\Controllers\Ppk\MakController;
@@ -15,7 +15,10 @@ use Illuminate\Support\Facades\Route;
  * Semua URL diawali /ppk dan semua nama route diawali "ppk." (contoh: ppk.dashboard),
  * sehingga tidak bentrok dengan role lain. Nanti tambahkan middleware role di group ini.
  */
-Route::prefix('ppk')->name('ppk.')->group(function () {
+Route::prefix('ppk')
+    ->name('ppk.')
+    ->middleware(['auth', 'role:PPK'])
+    ->group(function () {
 
     // Dashboard PPK: sama seperti Dashboard Wadir 2 (tampilan dipakai ulang)
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');

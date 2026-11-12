@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 use App\Http\Controllers\Wadir2\DashboardController;
 use App\Http\Controllers\Wadir2\NotifikasiController;
@@ -12,7 +12,10 @@ use Illuminate\Support\Facades\Route;
  * Semua URL diawali /wadir2 dan semua nama route diawali "wadir2." (contoh: wadir2.dashboard),
  * sehingga tidak bentrok dengan role lain. Nanti tambahkan middleware role di group ini.
  */
-Route::prefix('wadir2')->name('wadir2.')->group(function () {
+Route::prefix('wadir2')
+    ->name('wadir2.')
+    ->middleware(['auth', 'role:Wadir 2'])
+    ->group(function () {
 
     // Dashboard utama Wadir 2 (sama seperti Dashboard User Unit + kolom Unit Pengaju)
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');

@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 use App\Http\Controllers\Ppbj\DashboardController;
 use App\Http\Controllers\Ppbj\KontrakController;
@@ -13,7 +13,10 @@ use Illuminate\Support\Facades\Route;
  * Semua URL diawali /ppbj dan semua nama route diawali "ppbj." (contoh: ppbj.dashboard),
  * sehingga tidak bentrok dengan role lain. Nanti tambahkan middleware role di group ini.
  */
-Route::prefix('ppbj')->name('ppbj.')->group(function () {
+Route::prefix('ppbj')
+    ->name('ppbj.')
+    ->middleware(['auth', 'role:PPBJ'])
+    ->group(function () {
 
     // Dashboard PPBJ: 4 kartu ringkasan + Daftar Permohonan (jenis pengadaan dan PIC)
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');

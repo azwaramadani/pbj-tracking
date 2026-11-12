@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 use App\Http\Controllers\Perencanaan\DashboardController;
 use App\Http\Controllers\Perencanaan\NotifikasiController;
@@ -12,7 +12,10 @@ use Illuminate\Support\Facades\Route;
  * Semua URL diawali /perencanaan dan semua nama route diawali "perencanaan." (contoh: perencanaan.dashboard),
  * sehingga tidak bentrok dengan role lain. Nanti tambahkan middleware role di group ini.
  */
-Route::prefix('perencanaan')->name('perencanaan.')->group(function () {
+Route::prefix('perencanaan')
+    ->name('perencanaan.')
+    ->middleware(['auth', 'role:Perencanaan'])
+    ->group(function () {
 
     // Dashboard Perencanaan: kartu ringkasan + Daftar Permohonan
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');

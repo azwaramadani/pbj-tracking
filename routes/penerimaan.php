@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 use App\Http\Controllers\Penerimaan\DashboardController;
 use App\Http\Controllers\Penerimaan\DokumentasiController;
@@ -11,7 +11,10 @@ use Illuminate\Support\Facades\Route;
  * Semua URL diawali /penerimaan dan semua nama route diawali "penerimaan." (contoh: penerimaan.dashboard),
  * sehingga tidak bentrok dengan role lain. Nanti tambahkan middleware role di group ini.
  */
-Route::prefix('penerimaan')->name('penerimaan.')->group(function () {
+Route::prefix('penerimaan')
+    ->name('penerimaan.')
+    ->middleware(['auth', 'role:Perlengkapan'])
+    ->group(function () {
 
     // Dashboard Penerimaan: kartu ringkasan + Daftar Penerimaan
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');

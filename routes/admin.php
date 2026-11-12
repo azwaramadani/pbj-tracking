@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 use App\Http\Controllers\Admin\DaftarController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -10,7 +10,10 @@ use Illuminate\Support\Facades\Route;
  * Semua URL diawali /admin dan semua nama route diawali "admin." (contoh: admin.dashboard, admin.pengguna.index),
  * sehingga tidak bentrok dengan role lain. Nanti tambahkan middleware role di group ini.
  */
-Route::prefix('admin')->name('admin.')->group(function () {
+Route::prefix('admin')
+    ->name('admin.')
+    ->middleware(['auth', 'role:Super Admin'])
+    ->group(function () {
 
     // Dashboard + Detail (memakai ulang tampilan Detail Tracking milik PPK)
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');

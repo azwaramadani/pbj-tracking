@@ -122,7 +122,7 @@
             </div>
 
             <!-- Form login. Belum ada route POST, jadi pengiriman dicegah sementara (lihat skrip di bawah) -->
-            <form id="form-login" method="POST" action="#" class="space-y-5">
+            <form id="form-login" method="POST" action="{{ route('login.store') }}" class="space-y-5">
                 @csrf
 
                 <!-- Grup input: Alamat Email -->
@@ -218,11 +218,8 @@
         tombolMata.setAttribute('aria-label', tersembunyi ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi');
     });
 
-    // Sementara (belum ada autentikasi): tombol "Masuk ke Dashboard" langsung membuka halaman dashboard
-    document.getElementById('form-login').addEventListener('submit', (e) => {
-        e.preventDefault();
-        window.location.href = "{{ route('unit.dashboard') }}";
-    });
+
+
 </script>
 </body>
 </html>

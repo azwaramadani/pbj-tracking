@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 use App\Http\Controllers\Keuangan\DashboardController;
 use App\Http\Controllers\Keuangan\NotifikasiController;
@@ -11,7 +11,10 @@ use Illuminate\Support\Facades\Route;
  * Semua URL diawali /keuangan dan semua nama route diawali "keuangan." (contoh: keuangan.dashboard),
  * sehingga tidak bentrok dengan role lain. Nanti tambahkan middleware role di group ini.
  */
-Route::prefix('keuangan')->name('keuangan.')->group(function () {
+Route::prefix('keuangan')
+    ->name('keuangan.')
+    ->middleware(['auth', 'role:Keuangan'])
+    ->group(function () {
 
     // Dashboard Keuangan: kartu ringkasan + Daftar Penerimaan
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
