@@ -29,7 +29,7 @@ class DataAdmin
 
     /** Dashboard: tiga baris ringkasan; tombol Detail menuju Detail Tracking (id 601-603 milik App\Support\Ppk\DataTracking) */
     public static function dashboard(): array
-    {
+    {   
         return [
             'judul'     => 'Dashboard',
             'deskripsi' => 'Ringkasan administrasi dan pengelolaan SIMPATIK-PBJ.',
@@ -91,13 +91,14 @@ class DataAdmin
             ],
             // Isian modal Detail Pengguna (urut sesuai mockup); 'opsi' menjadikan isian dropdown, 'tetap' = tidak bisa diubah saat mode edit
             'detail' => [
-                ['label' => 'ID Pengguna', 'kunci' => 'id',     'tetap' => true],
-                ['label' => 'Nama',        'kunci' => 'nama'],
-                ['label' => 'Email',       'kunci' => 'email',  'jenis' => 'email'],
-                ['label' => 'NIP',         'kunci' => 'nip'],
-                ['label' => 'Unit',        'kunci' => 'unit'],
-                ['label' => 'Role',        'kunci' => 'role',   'opsi' => ['Super Admin', 'User Unit', 'Wadir 2', 'PP', 'PPK', 'PPBJ', 'Perencanaan', 'Penerimaan', 'Keuangan']],
-                ['label' => 'Status',      'kunci' => 'status', 'opsi' => ['Aktif', 'Nonaktif']],
+                ['label' => 'ID Pengguna', 'kunci' => 'id', 'tetap' => true],
+                ['label' => 'Nama', 'kunci' => 'nama', 'nama' => 'nama'],
+                ['label' => 'Email', 'kunci' => 'email', 'nama' => 'email', 'jenis' => 'email'],
+                ['label' => 'NIP', 'kunci' => 'nip', 'nama' => 'nip'],
+                ['label' => 'Unit', 'kunci' => 'unit', 'nama' => 'unit'],
+                ['label' => 'Role', 'kunci' => 'role_id', 'nama' => 'role_id', 'opsi' => []],
+                ['label' => 'Status', 'kunci' => 'status', 'nama' => 'status', 'opsi' => ['Aktif', 'Nonaktif']],
+
             ],
             'baris' => [
                 ['id' => 'USR-2026-0001', 'nama' => 'Mahfudh Al Rafif',   'email' => 'mahfudh@simp.pbj.id', 'nip' => '198503212010121002', 'unit' => 'Administrasi',    'role' => 'Super Admin', 'status' => 'Aktif'],

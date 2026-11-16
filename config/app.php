@@ -98,6 +98,8 @@ return [
     'cipher' => 'AES-256-CBC',
 
     'key' => env('APP_KEY'),
+    
+    'password_fingerprint_key' => env('PASSWORD_FINGERPRINT_KEY'),
 
     'previous_keys' => [
         ...array_filter(

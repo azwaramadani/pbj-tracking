@@ -14,7 +14,7 @@
     $menuSidebar ??= [
         ['kunci' => 'dashboard',  'label' => 'Dashboard',  'rute' => 'unit.dashboard',
          'ikon'  => 'M3.75 15.75a8.25 8.25 0 1116.5 0M12 15.75l3-4.5'],
-        ['kunci' => 'permohonan', 'label' => 'Permohonan', 'rute' => 'unit.permohonan.create',
+        ['kunci' => 'permohonan', 'label' => 'Permohonan', 'rute' => 'unit.permohonan.index',
          'ikon'  => 'M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z'],
         ['kunci' => 'notifikasi', 'label' => 'Notifikasi', 'rute' => 'unit.notifikasi.index', 'badge' => 3,
          'ikon'  => 'M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0'],

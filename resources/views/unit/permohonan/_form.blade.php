@@ -11,6 +11,11 @@
     $kelasInput = 'h-[41px] w-full rounded-lg border border-gray-200 bg-white px-3 text-[14px] text-gray-900 placeholder-gray-500 outline-none transition focus:border-tosca-400 focus:ring-2 focus:ring-tosca-400/20';
     $kelasLabel = 'mb-1.5 block text-[14px] font-semibold text-gray-900';
     $data = $permohonan ?? [];
+    $nilaiAnggaranAwal = preg_replace(
+    '/\D+/',
+    '',
+    (string) old('nilai_anggaran', $data['nilai_anggaran'] ?? '')
+);
 @endphp
 
 <!-- ===================== KARTU FORMULIR USULAN PENGADAAN UNIT ===================== -->
@@ -22,8 +27,20 @@
         Untuk revisi, tambahkan @method('PUT') di dalam form. enctype multipart/form-data wajib karena ada unggah berkas.
         Tombol "Simpan Draf" dan "Kirim Permohonan" membawa name="aksi" (nilai: draf / kirim) agar backend tahu tombol mana yang ditekan.
     --}}
-    <form id="form-permohonan" method="POST" action="" enctype="multipart/form-data" class="space-y-[18px]">
-        @csrf
+    <form
+    id="form-permohonan"
+    method="POST"
+    action="{{ isset($data['id'])
+        ? route('unit.permohonan.update', $data['id'])
+        : route('unit.permohonan.store') }}"
+    enctype="multipart/form-data"
+    class="space-y-[18px]"
+>
+    @csrf
+
+    @if (isset($data['id']))
+        @method('PUT')
+    @endif
 
         <!-- Baris 1: dua kolom sejajar (Nomor Surat dan Judul Pengadaan) -->
         <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
@@ -61,12 +78,44 @@
             </div>
 
             <!-- Grup isian: Nilai Anggaran (tidak wajib). TODO Backend: bersihkan format rupiah sebelum disimpan sebagai angka -->
-            <div>
-                <label for="nilai_anggaran" class="{{ $kelasLabel }}">Nilai Anggaran</label>
-                <input id="nilai_anggaran" name="nilai_anggaran" type="text" inputmode="numeric" value="{{ old('nilai_anggaran', $data['nilai_anggaran'] ?? '') }}"
-                       placeholder="Masukkan perihal nilai anggaran" class="{{ $kelasInput }}">
-            </div>
-        </div>
+            
+{{-- Grup isian: Nilai Anggaran --}}
+<div>
+    <label for="nilai_anggaran_display" class="{{ $kelasLabel }}">
+        Nilai Anggaran
+    </label>
+
+    <div class="flex h-[41px] w-full overflow-hidden rounded-lg border border-gray-200 bg-white transition focus-within:border-tosca-400 focus-within:ring-2 focus-within:ring-tosca-400/20">
+
+        <span class="flex items-center border-r border-gray-200 bg-gray-50 px-3 text-sm font-medium text-gray-600">
+            Rp
+        </span>
+
+        {{-- Input yang dilihat dan diketik pengguna --}}
+        <input
+            id="nilai_anggaran_display"
+            type="text"
+            inputmode="numeric"
+            autocomplete="off"
+            value="{{ $nilaiAnggaranAwal !== '' ? number_format((int) $nilaiAnggaranAwal, 0, ',', '.') : '' }}"
+            placeholder="Contoh: 200.000.000"
+            class="h-full w-full border-0 bg-transparent px-3 text-[14px] text-gray-900 outline-none"
+        >
+
+        {{-- Nilai asli yang dikirim ke backend --}}
+        <input
+            type="hidden"
+            id="nilai_anggaran"
+            name="nilai_anggaran"
+            value="{{ $nilaiAnggaranAwal }}"
+        >
+    </div>
+
+    @error('nilai_anggaran')
+        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+    @enderror
+</div>
+
 
         <!-- Baris 3: tujuan dan alasan kebutuhan (area teks, lebar penuh) -->
         <div>
@@ -75,26 +124,91 @@
                       class="{{ $kelasInput }} h-[99px] resize-y py-2.5">{{ old('alasan_kebutuhan', $data['deskripsi'] ?? '') }}</textarea>
         </div>
 
-        <!-- Baris 4: area unggah lampiran dengan fitur drag-and-drop -->
-        <div>
-            <span class="{{ $kelasLabel }}">Unggah Lampiran Pendukung (RAB, KAK, Spesifikasi) *</span>
+        
 
-            <!-- Zona drag-and-drop: seluruh area bisa diklik; garis putus-putus berubah saat file diseret ke atasnya -->
-            <label id="zona-unggah" for="lampiran"
-                   class="flex h-[144px] cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-tosca-400 bg-[#f8fafc] px-4 text-center transition">
-                <!-- Ikon awan dengan panah unggah -->
-                <svg class="h-[30px] w-[30px] text-tosca-400" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" />
-                </svg>
-                <span class="mt-3.5 text-[14px] font-semibold">Tarik dan lepaskan file di sini, atau klik tombol jelajahi</span>
-                <span class="mt-1 text-[12px] text-gray-500">Hanya file PDF, XLSX, atau ZIP (Maksimal 10MB per file)</span>
-                <!-- Daftar nama file yang sudah dipilih (diisi oleh skrip di bawah) -->
-                <span id="daftar-berkas" class="mt-1 text-[12px] font-medium text-tosca-400"></span>
+{{-- Baris 4: unggah tiga kategori dokumen --}}
+<div class="space-y-4">
+    <div>
+        <span class="{{ $kelasLabel }}">
+            Unggah Lampiran Pendukung (RAB, KAK, Spesifikasi)
+        </span>
+        <p class="mt-1 text-xs text-gray-500">
+            Lampiran boleh belum lengkap saat menyimpan draf,
+            tetapi wajib lengkap saat mengirim permohonan.
+        </p>
+    </div>
 
-                <!-- Input file asli disembunyikan secara visual; name berupa array agar bisa banyak berkas -->
-                <input id="lampiran" name="lampiran[]" type="file" multiple accept=".pdf,.xlsx,.zip" class="sr-only">
+    @foreach ([
+        'rab' => 'Dokumen RAB',
+        'kak' => 'Dokumen KAK',
+        'spesifikasi' => 'Dokumen Spesifikasi',
+    ] as $field => $label)
+        <div class="space-y-2">
+            <label for="{{ $field }}" class="{{ $kelasLabel }}">
+                {{ $label }}
             </label>
+
+            <label
+                id="zona-{{ $field }}"
+                for="{{ $field }}"
+                class="flex min-h-[100px] cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-4 text-center transition hover:border-blue-400 hover:bg-blue-50"
+            >
+                <svg
+                    class="mb-2 h-7 w-7 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="1.5"
+                        d="M12 16V4m0 0L8 8m4-4 4 4M4 16v3a1 1 0 001 1h14a1 1 0 001-1v-3"
+                    />
+                </svg>
+
+                <span class="text-sm font-medium text-gray-700">
+                    Klik atau tarik file ke sini
+                </span>
+
+                <span
+                    id="nama-{{ $field }}"
+                    class="mt-1 text-xs text-gray-500"
+                >
+                    Belum ada file dipilih
+                </span>
+
+                <input
+                    id="{{ $field }}"
+                    name="{{ $field }}"
+                    type="file"
+                    accept=".pdf,.xlsx,.zip"
+                    class="sr-only"
+                >
+                @if (!empty($data['dokumen'][$field]))
+    <p class="mt-2 text-xs text-green-700">
+        <span class="font-semibold">Dokumen tersimpan:</span>
+        {{ basename($data['dokumen'][$field]->File_path) }}
+    </p>
+@else
+    <p class="mt-2 text-xs text-gray-400">
+        Belum ada dokumen tersimpan.
+    </p>
+@endif
+            </label>
+
+            @error($field)
+                <p class="text-sm text-red-600">{{ $message }}</p>
+            @enderror
         </div>
+    @endforeach
+
+    <p class="text-xs text-gray-500">
+        Format PDF, XLSX, atau ZIP. Maksimal 10 MB per file.
+    </p>
+</div>
+
+
 
         <!-- Baris tombol aksi di kanan bawah: Simpan Draf (outline) dan Kirim Permohonan (tosca gelap) -->
         <div class="flex justify-end gap-3 !pt-[14px]">
@@ -106,36 +220,74 @@
     </form>
 </section>
 
+
 @push('skrip')
 <script>
-    const zona   = document.getElementById('zona-unggah');
-    const input  = document.getElementById('lampiran');
-    const daftar = document.getElementById('daftar-berkas');
+    ['rab', 'kak', 'spesifikasi'].forEach(field => {
+        const zona = document.getElementById(`zona-${field}`);
+        const input = document.getElementById(field);
+        const nama = document.getElementById(`nama-${field}`);
 
-    // Tampilkan nama file yang dipilih di dalam zona unggah
-    const tampilkanBerkas = () => {
-        daftar.textContent = Array.from(input.files).map(f => f.name).join(', ');
-    };
-    input.addEventListener('change', tampilkanBerkas);
+        if (!zona || !input || !nama) return;
 
-    // Beri sorotan saat file diseret ke atas zona
-    ['dragenter', 'dragover'].forEach(nama => zona.addEventListener(nama, e => {
-        e.preventDefault();
-        zona.classList.add('bg-tosca-400/5', 'border-solid');
-    }));
+        const tampilkanBerkas = () => {
+            nama.textContent = input.files.length
+                ? input.files[0].name
+                : 'Belum ada file dipilih';
+        };
 
-    ['dragleave', 'drop'].forEach(nama => zona.addEventListener(nama, e => {
-        e.preventDefault();
-        zona.classList.remove('bg-tosca-400/5', 'border-solid');
-    }));
+        input.addEventListener('change', tampilkanBerkas);
 
-    // Saat file dilepas, masukkan ke input file agar ikut terkirim bersama form
-    zona.addEventListener('drop', e => {
-        input.files = e.dataTransfer.files;
-        tampilkanBerkas();
+        ['dragenter', 'dragover'].forEach(eventName => {
+            zona.addEventListener(eventName, event => {
+                event.preventDefault();
+                zona.classList.add('border-blue-500', 'bg-blue-50');
+            });
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            zona.addEventListener(eventName, event => {
+                event.preventDefault();
+                zona.classList.remove('border-blue-500', 'bg-blue-50');
+            });
+        });
+
+        zona.addEventListener('drop', event => {
+            input.files = event.dataTransfer.files;
+            tampilkanBerkas();
+        });
     });
 
-    // TODO Backend: hapus baris ini setelah action form diisi route penyimpanan. Selama belum ada route, pengiriman dicegah.
-    document.getElementById('form-permohonan').addEventListener('submit', e => e.preventDefault());
+    // Format otomatis nominal Rupiah.
+const inputNominal = document.getElementById('nilai_anggaran_display');
+const nominalAsli = document.getElementById('nilai_anggaran');
+const formPermohonan = document.getElementById('form-permohonan');
+
+if (inputNominal && nominalAsli) {
+
+    const formatRupiah = (angka) => {
+        const angkaBersih = angka.replace(/\D/g, '');
+
+        return angkaBersih.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    };
+
+    inputNominal.addEventListener('input', function () {
+
+        const angkaBersih = this.value.replace(/\D/g, '');
+
+        this.value = formatRupiah(angkaBersih);
+
+        // Hidden input menyimpan angka tanpa titik.
+        nominalAsli.value = angkaBersih;
+    });
+
+    // Sinkronisasi ketika form dikirim.
+    if (formPermohonan) {
+        formPermohonan.addEventListener('submit', function () {
+            nominalAsli.value = inputNominal.value.replace(/\D/g, '');
+        });
+    }
+}
 </script>
 @endpush
+

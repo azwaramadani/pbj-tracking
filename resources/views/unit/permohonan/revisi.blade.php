@@ -2,7 +2,7 @@
 
 @section('judul_halaman', 'Form Permohonan')
 @section('menu_aktif', 'permohonan')
-@section('url_kembali', route('unit.permohonan.show', $permohonan['id']))
+@section('url_kembali', route('unit.permohonan.index'))
 
 @section('konten')
 

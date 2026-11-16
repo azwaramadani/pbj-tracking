@@ -125,6 +125,14 @@
             <form id="form-login" method="POST" action="{{ route('login.store') }}" class="space-y-5">
                 @csrf
 
+                @if ($errors->any())
+                 <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                @foreach ($errors->all() as $error)
+                <p>{{ $error }}</p>
+                @endforeach
+                </div>
+                @endif
+
                 <!-- Grup input: Alamat Email -->
                 <div>
                     <label for="email" class="mb-2 block text-[13px] font-semibold text-slate-900">Alamat Email</label>
@@ -167,9 +175,14 @@
                 <!-- Baris opsi: checkbox "Ingat Saya" dan tautan "Lupa Password?" -->
                 <div class="flex items-center justify-between">
                     <label class="flex cursor-pointer items-center gap-2 text-[14px] text-slate-500">
-                        <input type="checkbox" name="remember" checked class="h-[18px] w-[18px] rounded border-slate-300 accent-brand-800">
-                        Ingat Saya
-                    </label>
+    <input
+        type="checkbox"
+        name="remember"
+        value="1"
+        class="h-[18px] w-[18px] rounded border-slate-300 accent-brand-800"
+    >
+    Ingat Saya
+</label>
                     <a href="#" class="text-[13px] font-bold text-accent transition hover:text-brand-700">Lupa Password?</a>
                 </div>
 

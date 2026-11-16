@@ -2,7 +2,7 @@
 
 @section('judul_halaman', 'Detail Permohonan')
 @section('menu_aktif', 'permohonan')
-@section('url_kembali', url()->previous(route('unit.dashboard')))
+@section('url_kembali', url()->previous(route('unit.permhonan.index')))
 
 @section('konten')
 

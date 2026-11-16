@@ -22,11 +22,22 @@ Route::prefix('unit')
     // Halaman utama setelah masuk
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Menu "Permohonan" langsung membuka formulir Buat Permohonan; alamat /permohonan dialihkan ke sana
-    Route::redirect('/permohonan', '/unit/permohonan/buat')->name('permohonan.index');
+    // Daftar Permohonan
+Route::get('/permohonan', [PermohonanController::class, 'index'])
+    ->name('permohonan.index');
 
-    // Formulir usulan pengadaan baru (tampilan saja), dibuka lewat tombol "Buat Permohonan Baru"
-    Route::view('/permohonan/buat', 'unit.permohonan.create')->name('permohonan.create');
+    
+    Route::get('/permohonan/buat', function () {
+    return view('unit.permohonan.create');
+    })->name('permohonan.create');
+
+    Route::post('/permohonan', [PermohonanController::class, 'store'])
+    ->name('permohonan.store');
+
+    Route::put('/permohonan/{id}', [PermohonanController::class, 'update'])
+    ->whereNumber('id')
+    ->name('permohonan.update');
+
 
     // Detail satu permohonan; didefinisikan setelah /permohonan/buat agar tidak bentrok
     Route::get('/permohonan/{id}', [PermohonanController::class, 'show'])->whereNumber('id')->name('permohonan.show');
