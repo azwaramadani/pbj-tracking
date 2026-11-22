@@ -16,7 +16,13 @@ class NotifikasiController extends Controller
 
     protected function urlDetail(object $notifikasi): string
     {
-        // TODO Backend: arahkan ke pengadaan yang dimaksud notifikasi; data contoh memakai id 901 sebagai contoh
-        return route('ppbj.pengadaan.show', 901);
+        if ($notifikasi->pengadaan_id) {
+            return route(
+                'ppbj.pengadaan.show',
+                $notifikasi->pengadaan_id
+            );
+        }
+
+        return route('ppbj.dashboard');
     }
 }

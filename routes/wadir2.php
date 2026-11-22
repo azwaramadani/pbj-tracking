@@ -22,6 +22,9 @@ Route::prefix('wadir2')
 
     // Detail Permohonan (dibuka dari tombol "Detail" di Dashboard) lengkap dengan modal Konfirmasi Persetujuan
     Route::get('/permohonan/{id}', [PermohonanController::class, 'show'])->whereNumber('id')->name('permohonan.show');
+    Route::post('/permohonan/{id}/keputusan', [PermohonanController::class, 'keputusan'])
+    ->whereNumber('id')
+    ->name('permohonan.keputusan');
 
     // Tab "Pembayaran": kartu ringkasan paket pembayaran + Daftar Permohonan dengan jenis dan nilai pengadaan
     Route::get('/pembayaran', [PembayaranController::class, 'index'])->name('pembayaran.index');

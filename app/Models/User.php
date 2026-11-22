@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use RuntimeException;
 
 class User extends Authenticatable
@@ -92,4 +93,24 @@ class User extends Authenticatable
             'Id_role'
         );
     }
+
+    // Relasi: Satu user dapat memiliki banyak penugasan sebagai PP.
+public function penugasanPP(): HasMany
+{
+    return $this->hasMany(
+        PenugasanPP::class,
+        'Id_user_pp',
+        'Id_user'
+    );
+}
+
+// Relasi: Satu user dapat memiliki banyak penugasan sebagai PPK.
+public function penugasanPPK(): HasMany
+{
+    return $this->hasMany(
+        PenugasanPPK::class,
+        'Id_user_ppk',
+        'Id_user'
+    );
+}
 }

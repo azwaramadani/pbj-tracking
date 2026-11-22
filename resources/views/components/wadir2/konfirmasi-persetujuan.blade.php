@@ -56,13 +56,13 @@
                     <!-- Petunjuk aturan pengisian (selalu tampil) -->
                     <p class="mt-[6px] flex items-center gap-1.5 text-[11px] leading-4 text-[#e5484d]">
                         <svg class="h-3 w-3 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" d="M12 8v4m0 4h.01"/></svg>
-                        Wajib diisi jika permohonan ditolak.
+                        Wajib diisi jika permohonan direvisi atau ditolak.
                     </p>
 
                     <!-- Pesan kesalahan validasi: tersembunyi sampai pengguna memilih Tolak dengan alasan kosong lalu menekan Konfirmasi -->
                     <p id="galat-alasan" class="mt-2 hidden items-center gap-1.5 rounded-md border border-[#f5c2c2] bg-[#fef2f2] px-2.5 py-[7px] text-[11px] font-semibold leading-4 text-[#e5484d]" role="alert">
                         <svg class="h-3 w-3 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" d="M12 8v4m0 4h.01"/></svg>
-                        Alasan penolakan wajib diisi.
+                        Alasan wajib diisi untuk keputusan revisi atau penolakan.
                     </p>
                 </div>
 
@@ -80,43 +80,89 @@
 
 @push('skrip')
 <script>
-    (function () {
-        const modal = document.getElementById('modal-konfirmasi');
-        const form = document.getElementById('form-konfirmasi');
-        const alasan = document.getElementById('alasan_persetujuan');
-        const galat = document.getElementById('galat-alasan');
+    
+(function () {
+    const modal = document.getElementById('modal-konfirmasi');
+    const form = document.getElementById('form-konfirmasi');
+    const alasan = document.getElementById('alasan_persetujuan');
+    const galat = document.getElementById('galat-alasan');
 
-        const sembunyikanGalat = () => { galat.classList.add('hidden'); galat.classList.remove('flex'); };
-        const buka = () => { modal.classList.remove('hidden'); document.body.classList.add('overflow-hidden'); };
-        const tutup = () => { modal.classList.add('hidden'); document.body.classList.remove('overflow-hidden'); sembunyikanGalat(); };
+    const sembunyikanGalat = () => {
+        galat.classList.add('hidden');
+        galat.classList.remove('flex');
+    };
 
-        // Tombol dengan data-buka-modal membuka modal; tombol X, Batal, Esc, atau klik di luar kotak menutupnya
-        document.querySelectorAll('[data-buka-modal="modal-konfirmasi"]').forEach((el) => el.addEventListener('click', buka));
-        modal.querySelectorAll('[data-tutup-modal]').forEach((el) => el.addEventListener('click', tutup));
-        modal.addEventListener('click', (e) => { if (e.target === modal || e.target === modal.firstElementChild) tutup(); });
-        document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !modal.classList.contains('hidden')) tutup(); });
+    const buka = () => {
+        modal.classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+    };
 
-        // Pesan kesalahan hilang begitu pengguna mengubah pilihan atau mengetik alasan
-        alasan.addEventListener('input', sembunyikanGalat);
-        form.querySelectorAll('input[name="keputusan"]').forEach((el) => el.addEventListener('change', sembunyikanGalat));
+    const tutup = () => {
+        modal.classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+        sembunyikanGalat();
+    };
 
-        // Validasi sisi klien: alasan wajib diisi jika keputusan = Tolak
-        form.addEventListener('submit', (e) => {
-            const keputusan = form.querySelector('input[name="keputusan"]:checked').value;
+    // Membuka modal
+    document.querySelectorAll('[data-buka-modal="modal-konfirmasi"]')
+        .forEach((el) => el.addEventListener('click', buka));
 
-            if (keputusan === 'tolak' && alasan.value.trim() === '') {
-                e.preventDefault();
-                galat.classList.remove('hidden');
-                galat.classList.add('flex');
-                alasan.focus();
-                return;
-            }
+    // Menutup modal
+    modal.querySelectorAll('[data-tutup-modal]')
+        .forEach((el) => el.addEventListener('click', tutup));
 
-            // TODO Backend: setelah action form diisi route penyimpanan, pengiriman berjalan normal (blok ini tidak aktif).
-            @if ($action === '')
+    modal.addEventListener('click', (e) => {
+        if (
+            e.target === modal ||
+            e.target === modal.firstElementChild
+        ) {
+            tutup();
+        }
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+            tutup();
+        }
+    });
+
+    // Menghilangkan pesan error ketika pengguna memperbaiki input
+    alasan.addEventListener('input', sembunyikanGalat);
+
+    form.querySelectorAll('input[name="keputusan"]').forEach((el) => {
+        el.addEventListener('change', sembunyikanGalat);
+    });
+
+    // Validasi sebelum form dikirim
+    form.addEventListener('submit', (e) => {
+        const pilihan = form.querySelector(
+            'input[name="keputusan"]:checked'
+        );
+
+        if (!pilihan) {
             e.preventDefault();
-            @endif
-        });
-    })();
+            return;
+        }
+
+        const keputusan = pilihan.value;
+
+        const alasanWajib = ['revisi', 'tolak'].includes(keputusan);
+
+        if (alasanWajib && alasan.value.trim() === '') {
+            e.preventDefault();
+
+            galat.classList.remove('hidden');
+            galat.classList.add('flex');
+
+            alasan.focus();
+            return;
+        }
+
+        // Mencegah pengiriman jika route belum dihubungkan
+        @if ($action === '')
+            e.preventDefault();
+        @endif
+    });
+})();
 </script>
 @endpush

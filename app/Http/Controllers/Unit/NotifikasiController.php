@@ -16,6 +16,13 @@ class NotifikasiController extends Controller
 
     protected function urlDetail(object $notifikasi): string
     {
-        return route('unit.permohonan.show', $notifikasi->permohonan_id);
+        if ($notifikasi->permohonan_id) {
+            return route(
+                'unit.permohonan.show',
+                $notifikasi->permohonan_id
+            );
+        }
+
+        return route('unit.dashboard');
     }
 }

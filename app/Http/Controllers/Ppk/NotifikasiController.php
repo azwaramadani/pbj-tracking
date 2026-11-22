@@ -16,6 +16,20 @@ class NotifikasiController extends Controller
 
     protected function urlDetail(object $notifikasi): string
     {
-        return route('ppk.permohonan.show', $notifikasi->permohonan_id);
+        if ($notifikasi->permohonan_id) {
+            return route(
+                'ppk.permohonan.show',
+                $notifikasi->permohonan_id
+            );
+        }
+
+        if ($notifikasi->pengadaan_id) {
+            return route(
+                'ppk.pengadaan.show',
+                $notifikasi->pengadaan_id
+            );
+        }
+
+        return route('ppk.dashboard');
     }
 }

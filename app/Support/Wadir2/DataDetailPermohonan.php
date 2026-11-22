@@ -2,66 +2,205 @@
 
 namespace App\Support\Wadir2;
 
-use App\Support\Unit\DataPermohonan;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
-/**
- * Sumber data contoh (dummy) untuk halaman Detail Permohonan role Wadir 2.
- *
- * Permohonan diambil dari daftar Dashboard (id 101-134). Permohonan id 101 memakai isi persis seperti mockup;
- * permohonan lain diturunkan dari data pengajuan yang sama agar semua tombol "Detail" tetap bisa dibuka.
- * Saat model Eloquent tersedia, ganti isi cari() dengan query permohonan beserta relasi pengaju, lampiran, dan persetujuan.
- */
 class DataDetailPermohonan
 {
-    /** Satu permohonan lengkap untuk halaman Detail Permohonan Wadir 2; null jika tidak ditemukan */
+    /**
+     * Mengambil detail pengajuan berdasarkan ID.
+     */
     public static function cari(int $id): ?array
     {
-        $dasar = DataPermohonan::dashboard()->firstWhere('id', $id);
+        $data = DB::table('pengajuan_surat as p')
+            ->leftJoin(
+                'users as u',
+                'u.Id_user',
+                '=',
+                'p.Id_user_pemohon'
+            )
+            ->where('p.Id_pengajuan', $id)
+            ->select([
+                'p.Id_pengajuan',
+                'p.No_surat',
+                'p.Asal_surat',
+                'p.Judul_surat',
+                'p.Tujuan_pengadaan',
+                'p.Nominal_pengadaan',
+                'p.Status_surat',
+                'u.Nama_lengkap',
+                'u.NIP',
+            ])
+            ->first();
 
-        if ($dasar === null) {
+        if (!$data) {
             return null;
         }
 
-        // Status kartu persetujuan Perencanaan mengikuti status permohonan
-        $statusPerencanaan = in_array($dasar['status'], ['diproses', 'selesai'], true) ? 'disetujui' : 'menunggu';
+        // Mengambil seluruh dokumen milik pengajuan.
+        $dokumen = DB::table('dokumen_file')
+            ->where('Id_pengajuan', $id)
+            ->orderBy('Id_dokumen')
+            ->get();
 
-        $data = [
-            'id'              => $dasar['id'],
-            'nomor_surat'     => $dasar['no_surat'],
-            'unit_pengaju'    => $dasar['unit'],
-            'judul'           => $dasar['judul'],
-            'tujuan'          => $dasar['deskripsi'],
-            'total_anggaran'  => $dasar['nilai_anggaran'],
-            'lampiran'        => $dasar['lampiran'],
-            'pengaju'         => ['nama' => 'Rian Hidayat, S.T.', 'nip' => '198904122020121002', 'inisial' => 'RH'],
-            'catatan_revisi'  => 'Tidak ada.',
-            'perencanaan'     => [
-                'judul'            => 'Perencanaan',
-                'subjudul'         => 'Unit Perencanaan & IT',
-                'status'           => $statusPerencanaan,
-                'penanggung_jawab' => 'Dr. Ir. H. Hermawan',
-                'waktu'            => $statusPerencanaan === 'disetujui' ? '15 Februari 2026' : 'Belum disetujui',
-            ],
-        ];
+        $lampiran = $dokumen->map(function ($file) {
+            $ukuran = '-';
 
-        // Isi persis seperti mockup Detail Permohonan Wadir 2 (Perencanaan sudah menyetujui)
-        if ($id === 101) {
-            $data['perencanaan']['status'] = 'disetujui';
-            $data['perencanaan']['waktu'] = '15 Februari 2026';
-            $data = array_merge($data, [
-                'nomor_surat'    => '920/UN25.3.1/PBJ/2026',
-                'unit_pengaju'   => 'Fakultas Teknik - Jurusan Informatika',
-                'judul'          => 'Pengadaan Lab Komputer AI Dasar (Kapasitas 30 Unit PC)',
-                'tujuan'         => 'Memfasilitasi mata kuliah praktikum Kecerdasan Buatan dan Pembelajaran Mesin yang memiliki peningkatan jumlah mahasiswa di semester ganjil ini. Alat yang ada saat ini spesifikasinya kurang mumpuni untuk komputasi model AI.',
-                'total_anggaran' => 'Rp 450.000.000,00',
-                'lampiran'       => [
-                    ['nama' => 'Surat_Permohonan_FT_AI.pdf',                'ukuran' => '1.2 MB'],
-                    ['nama' => 'Rincian_Anggaran_Biaya_Komputer.xlsx',      'ukuran' => '485 KB'],
-                    ['nama' => 'Spesifikasi_Teknis_Komputer_Lab.pdf',       'ukuran' => '2.4 MB'],
-                ],
-            ]);
+            if (
+                !empty($file->File_path) &&
+                Storage::disk('public')->exists($file->File_path)
+            ) {
+                $bytes = Storage::disk('public')->size(
+                    $file->File_path
+                );
+
+                if ($bytes >= 1048576) {
+                    $ukuran = number_format(
+                        $bytes / 1048576,
+                        2
+                    ) . ' MB';
+                } elseif ($bytes >= 1024) {
+                    $ukuran = number_format(
+                        $bytes / 1024,
+                        2
+                    ) . ' KB';
+                } else {
+                    $ukuran = $bytes . ' B';
+                }
+            }
+
+            return [
+                'id' => $file->Id_dokumen,
+                'nama' => basename($file->File_path),
+                'ukuran' => $ukuran,
+                'kategori' => $file->Kategori_dokumen,
+            ];
+        })->values()->all();
+
+        // Mengambil riwayat persetujuan pengajuan.
+        $approval = DB::table('riwayat_approval')
+            ->where('Id_pengajuan', $id)
+            ->orderByDesc('Tanggal_approval')
+            ->get();
+
+        // Mengambil catatan revisi terakhir.
+        $catatanRevisi = $approval
+            ->first(function ($item) {
+                $status = strtolower(
+                    (string) $item->Status_approval
+                );
+
+                return str_contains($status, 'revisi');
+            });
+
+        // Mengambil status persetujuan Perencanaan.
+        $approvalPerencanaan = $approval
+            ->first(function ($item) {
+                return str_contains(
+                    strtolower((string) $item->Tahapan_approval),
+                    'perencanaan'
+                );
+            });
+
+        $statusPerencanaan = 'menunggu';
+        $waktuPerencanaan = '-';
+
+        if ($approvalPerencanaan) {
+            $statusPerencanaan = self::mapStatusApproval(
+                $approvalPerencanaan->Status_approval
+            );
+
+            $waktuPerencanaan =
+                $approvalPerencanaan->Tanggal_approval ?? '-';
         }
 
-        return $data;
+        // Format nominal pengajuan.
+        $nominal = self::formatRupiah(
+            $data->Nominal_pengadaan
+        );
+
+        $namaPengaju = $data->Nama_lengkap ?? '-';
+
+        $inisial = collect(
+            preg_split('/\s+/', trim($namaPengaju))
+        )
+            ->filter()
+            ->take(2)
+            ->map(fn ($kata) => mb_substr($kata, 0, 1))
+            ->implode('');
+
+        return [
+            'id' => $data->Id_pengajuan,
+            'nomor_surat' => $data->No_surat,
+            'unit_pengaju' => $data->Asal_surat ?? '-',
+            'judul' => $data->Judul_surat ?? '-',
+            'tujuan' => $data->Tujuan_pengadaan ?? '-',
+            'total_anggaran' => $nominal,
+            'lampiran' => $lampiran,
+
+            'pengaju' => [
+                'nama' => $namaPengaju,
+                'nip' => $data->NIP ?? '-',
+                'inisial' => $inisial ?: '-',
+            ],
+
+            'catatan_revisi' => $catatanRevisi->Catatan ?? '-',
+
+            'perencanaan' => [
+                'judul' => 'Persetujuan Perencanaan',
+                'subjudul' => 'Pemeriksaan pengajuan oleh bagian Perencanaan',
+                'status' => $statusPerencanaan,
+                'penanggung_jawab' => '-',
+                'waktu' => $waktuPerencanaan,
+            ],
+        ];
+    }
+
+    /**
+     * Mengubah status approval menjadi status tampilan.
+     */
+    private static function mapStatusApproval(?string $status): string
+    {
+        $status = strtolower(trim((string) $status));
+
+        if (str_contains($status, 'revisi')) {
+            return 'revisi';
+        }
+
+        if (str_contains($status, 'tolak')) {
+            return 'ditolak';
+        }
+
+        if (
+            str_contains($status, 'setuju') ||
+            str_contains($status, 'disetujui')
+        ) {
+            return 'disetujui';
+        }
+
+        return 'menunggu';
+    }
+
+    /**
+     * Format nominal ke rupiah.
+     */
+    private static function formatRupiah($nominal): string
+    {
+        if ($nominal === null || trim((string) $nominal) === '') {
+            return '-';
+        }
+
+        $angka = preg_replace('/[^0-9]/', '', (string) $nominal);
+
+        if ($angka === '') {
+            return (string) $nominal;
+        }
+
+        return 'Rp ' . number_format(
+            (float) $angka,
+            0,
+            ',',
+            '.'
+        );
     }
 }

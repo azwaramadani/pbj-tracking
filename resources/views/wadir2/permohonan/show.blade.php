@@ -141,6 +141,6 @@
 </div>
 
 <!-- Modal Konfirmasi Persetujuan (komponen bersama, disembunyikan secara default) -->
-<x-wadir2.konfirmasi-persetujuan :record-id="$permohonan['id']" field-name="permohonan_id" />
+<x-wadir2.konfirmasi-persetujuan :record-id="$permohonan['id']" field-name="permohonan_id" :action="route('wadir2.permohonan.keputusan', $permohonan['id'])" />
 
 @endsection
