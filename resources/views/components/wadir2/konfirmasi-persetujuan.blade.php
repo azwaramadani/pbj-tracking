@@ -49,7 +49,7 @@
 
                 <!-- Alasan persetujuan: SENGAJA KOSONG secara default (tanpa isi awal dan tanpa placeholder) -->
                 <div class="mt-5">
-                    <label for="alasan_persetujuan" class="block text-[12px] font-semibold uppercase leading-4 text-gray-600">Alasan Persetujuan <span class="text-[#e5484d]">*</span></label>
+                    <label for="alasan_persetujuan" class="block text-[12px] font-semibold uppercase leading-4 text-gray-600">Alasan Persetujuan <span id="penanda-wajib" class="hidden text-[#e5484d]">*</span></label>
                     <textarea id="alasan_persetujuan" name="alasan_persetujuan" rows="4"
                               class="mt-[9px] h-[96px] w-full resize-none rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-[13px] outline-none transition focus:border-tosca-600 focus:ring-2 focus:ring-tosca-600/20"></textarea>
 
@@ -86,6 +86,7 @@
     const form = document.getElementById('form-konfirmasi');
     const alasan = document.getElementById('alasan_persetujuan');
     const galat = document.getElementById('galat-alasan');
+    const penandaWajib = document.getElementById('penanda-wajib');
 
     const sembunyikanGalat = () => {
         galat.classList.add('hidden');
@@ -102,6 +103,22 @@
         document.body.classList.remove('overflow-hidden');
         sembunyikanGalat();
     };
+
+    const perbaruiKewajiban = () => {
+    const pilihan = form.querySelector(
+        'input[name="keputusan"]:checked'
+    );
+
+    const alasanWajib = pilihan &&
+        ['revisi', 'tolak'].includes(pilihan.value);
+
+    penandaWajib.classList.toggle('hidden', !alasanWajib);
+
+    alasan.setAttribute(
+        'aria-required',
+        alasanWajib ? 'true' : 'false'
+    );
+};
 
     // Membuka modal
     document.querySelectorAll('[data-buka-modal="modal-konfirmasi"]')
@@ -130,8 +147,13 @@
     alasan.addEventListener('input', sembunyikanGalat);
 
     form.querySelectorAll('input[name="keputusan"]').forEach((el) => {
-        el.addEventListener('change', sembunyikanGalat);
+    el.addEventListener('change', () => {
+        sembunyikanGalat();
+        perbaruiKewajiban();
     });
+});
+// Atur tanda wajib sesuai pilihan awal
+perbaruiKewajiban();
 
     // Validasi sebelum form dikirim
     form.addEventListener('submit', (e) => {

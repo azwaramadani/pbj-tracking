@@ -46,4 +46,13 @@ class PengajuanSurat extends Model
             'Id_pengajuan'
         );
     }
+
+public function pengadaan(): HasMany
+{
+    return $this->hasMany(
+        Pengadaan::class,
+        'Id_pengajuan',
+        'Id_pengajuan'
+    );
+}
 }

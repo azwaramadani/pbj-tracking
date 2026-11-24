@@ -62,43 +62,126 @@
         </div>
 
         <!-- Daftar baris pembagian: baris baru dibuat dengan menyalin baris pertama -->
-        <div id="baris-split" class="mt-4 space-y-3">
-            <!-- MULAI LOOP: Baris pembagian anggaran (satu iterasi = satu MAK + satu nominal). Backend mengisi ulang dari data tersimpan -->
-            @foreach ($split['baris'] as $i => $baris)
-                <div data-baris class="grid grid-cols-1 gap-x-4 gap-y-2 md:grid-cols-[minmax(0,1fr)_422px]">
-                    <div>
-                        <label data-label-mak class="mb-[6px] block text-[12px] font-semibold text-gray-800">MAK Alokasi {{ $i + 1 }}</label>
-                        <div class="relative">
-                            <select name="mak_alokasi[]" required
-                                    class="h-10 w-full appearance-none rounded-lg border border-gray-200 bg-white pl-3 pr-9 text-[13px] text-gray-900 outline-none transition focus:border-tosca-600 focus:ring-2 focus:ring-tosca-600/20">
-                                @foreach ($split['opsi_mak'] as $opsi)
-                                    <option value="{{ $opsi['kode'] }}" data-kategori="{{ $opsi['kategori'] }}" @selected($opsi['kode'] === $baris['kode'])>{{ $opsi['label'] }}</option>
-                                @endforeach
-                            </select>
-                            <svg class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
-                        </div>
-                    </div>
+       
+<div id="baris-split" class="mt-4 space-y-3">
+    @php
+        $barisTampil = count($split['baris']) > 0
+            ? $split['baris']
+            : [['kode' => '', 'nominal' => 0]];
+    @endphp
 
-                    <div class="flex items-end gap-3">
-                        <div class="min-w-0 flex-1">
-                            <label class="mb-[6px] block text-[12px] font-semibold text-gray-800">Jumlah Nominal</label>
-                            <!-- Kotak awalan "Rp" menyatu dengan kolom angka -->
-                            <div class="flex h-10 overflow-hidden rounded-lg border border-gray-200 focus-within:border-tosca-600 focus-within:ring-2 focus-within:ring-tosca-600/20">
-                                <span class="flex w-[42px] shrink-0 items-center justify-center bg-[#e9ecef] text-[13px] font-semibold text-gray-700">Rp</span>
-                                <input name="nominal[]" type="text" inputmode="numeric" required value="{{ number_format($baris['nominal'], 0, ',', '.') }}"
-                                       class="min-w-0 flex-1 bg-white px-3 text-[13px] text-gray-900 outline-none">
-                            </div>
-                        </div>
-                        <!-- Tombol hapus baris (ikon tempat sampah) -->
-                        <button type="button" data-hapus-baris aria-label="Hapus baris pembagian"
-                                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[#f1a9a6] bg-white text-[#e5484d] transition hover:bg-[#fef2f2] disabled:cursor-not-allowed disabled:opacity-40">
-                            <svg class="h-[18px] w-[18px]" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
-                        </button>
+    @foreach ($barisTampil as $i => $baris)
+        <div data-baris class="grid grid-cols-1 gap-x-4 gap-y-2 md:grid-cols-[minmax(0,1fr)_422px]">
+            <div>
+                <label data-label-mak class="mb-[6px] block text-[12px] font-semibold text-gray-800">
+                    MAK Alokasi {{ $i + 1 }}
+                </label>
+
+                <div class="relative">
+                    <select name="mak_alokasi[]" required
+                        class="h-10 w-full appearance-none rounded-lg border border-gray-200 bg-white pl-3 pr-9 text-[13px] text-gray-900 outline-none transition focus:border-tosca-600 focus:ring-2 focus:ring-tosca-600/20">
+                        <option value="" data-kategori="Belum dipilih">Pilih MAK</option>
+
+                        @foreach ($split['opsi_mak'] as $opsi)
+                            <option value="{{ $opsi['kode'] }}"
+                                data-kategori="{{ $opsi['kategori'] }}"
+                                @selected($opsi['kode'] === $baris['kode'])>
+                                {{ $opsi['label'] }}
+                            </option>
+                        @endforeach
+                    </select>
+
+                    <svg class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-600"
+                        fill="none" stroke="currentColor" stroke-width="2"
+                        viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                    </svg>
+                </div>
+            </div>
+
+            <div class="flex items-end gap-3">
+                <div class="min-w-0 flex-1">
+                    <label class="mb-[6px] block text-[12px] font-semibold text-gray-800">
+                        Jumlah Nominal
+                    </label>
+
+                    <div class="flex h-10 overflow-hidden rounded-lg border border-gray-200">
+                        <span class="flex w-[42px] shrink-0 items-center justify-center bg-[#e9ecef] text-[13px] font-semibold text-gray-700">
+                            Rp
+                        </span>
+
+                        <input name="nominal[]" type="text" inputmode="numeric"
+                            required
+                            value="{{ $baris['nominal'] > 0 ? number_format($baris['nominal'], 0, ',', '.') : '' }}"
+                            class="min-w-0 flex-1 bg-white px-3 text-[13px] text-gray-900 outline-none">
                     </div>
                 </div>
-            @endforeach
-            <!-- AKHIR LOOP: Baris pembagian anggaran -->
+
+                <button type="button" data-hapus-baris
+                    aria-label="Hapus baris pembagian"
+                    class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[#f1a9a6] bg-white text-[#e5484d]">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
         </div>
+    @endforeach
+
+    @if (count($split['opsi_mak']) === 0)
+        <p class="mt-3 text-xs text-amber-700">
+            Master data MAK belum tersedia. Pilihan MAK akan muncul setelah data MAK ditambahkan.
+        </p>
+    @endif
+</div>
+
+<template id="templat-baris-split">
+    <div data-baris class="grid grid-cols-1 gap-x-4 gap-y-2 md:grid-cols-[minmax(0,1fr)_422px]">
+        <div>
+            <label data-label-mak class="mb-[6px] block text-[12px] font-semibold text-gray-800">
+                MAK Alokasi
+            </label>
+
+            <div class="relative">
+                <select name="mak_alokasi[]" required
+                    class="h-10 w-full appearance-none rounded-lg border border-gray-200 bg-white pl-3 pr-9 text-[13px] text-gray-900 outline-none transition focus:border-tosca-600 focus:ring-2 focus:ring-tosca-600/20">
+                    <option value="" data-kategori="Belum dipilih">Pilih MAK</option>
+
+                    @foreach ($split['opsi_mak'] as $opsi)
+                        <option value="{{ $opsi['kode'] }}"
+                            data-kategori="{{ $opsi['kategori'] }}">
+                            {{ $opsi['label'] }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+        </div>
+
+        <div class="flex items-end gap-3">
+            <div class="min-w-0 flex-1">
+                <label class="mb-[6px] block text-[12px] font-semibold text-gray-800">
+                    Jumlah Nominal
+                </label>
+
+                <div class="flex h-10 overflow-hidden rounded-lg border border-gray-200">
+                    <span class="flex w-[42px] shrink-0 items-center justify-center bg-[#e9ecef] text-[13px] font-semibold text-gray-700">
+                        Rp
+                    </span>
+
+                    <input name="nominal[]" type="text" inputmode="numeric"
+                        required
+                        class="min-w-0 flex-1 bg-white px-3 text-[13px] text-gray-900 outline-none">
+                </div>
+            </div>
+
+            <button type="button" data-hapus-baris
+                aria-label="Hapus baris pembagian"
+                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[#f1a9a6] bg-white text-[#e5484d]">
+                <span aria-hidden="true">×</span>
+            </button>
+        </div>
+    </div>
+</template>
+
 
         <!-- Bar validasi: hijau jika jumlah seluruh baris sama dengan nilai asli permohonan, merah jika berbeda -->
         <div class="mt-5 border-t border-gray-200 pt-5">
@@ -176,73 +259,69 @@
         const semuaBaris = () => [...wadah.querySelectorAll('[data-baris]')];
 
         // Hitung ulang nomor baris, total, bar validasi, tombol simpan, dan diagram turunan
-        function segarkan() {
-            const baris = semuaBaris();
-            let jumlah = 0;
-            let adaKosong = false;
-            diagram.innerHTML = '';
+        
+function segarkan() {
+    const baris = semuaBaris();
+    let jumlah = 0;
+    let adaKosong = baris.length === 0;
 
-            baris.forEach((b, i) => {
-                b.querySelector('[data-label-mak]').textContent = 'MAK Alokasi ' + (i + 1);
-                b.querySelector('[data-hapus-baris]').disabled = baris.length === 1;
+    diagram.innerHTML = '';
 
-                const nominal = angka(b.querySelector('[name="nominal[]"]'));
-                jumlah += nominal;
-                adaKosong = adaKosong || nominal === 0;
+    baris.forEach((b, i) => {
+        b.querySelector('[data-label-mak]').textContent =
+            'MAK Alokasi ' + (i + 1);
 
-                const kategori = b.querySelector('select').selectedOptions[0].dataset.kategori;
-                const kotak = cetakan.content.firstElementChild.cloneNode(true);
-                kotak.querySelector('[data-judul]').textContent = kodeInduk + '-' + String.fromCharCode(65 + i) + ' (' + kategori + ')';
-                kotak.querySelector('[data-nilai]').textContent = rupiah(nominal);
-                diagram.appendChild(kotak);
-            });
+        b.querySelector('[data-hapus-baris]').disabled =
+            baris.length === 1;
 
-            const sesuai = jumlah === totalAsli;
-            bar.classList.remove(...kelasSesuai, ...kelasSelisih);
-            bar.classList.add(...(sesuai ? kelasSesuai : kelasSelisih));
-            pesan.textContent = sesuai ? 'Total pembagian sesuai dengan nilai asli permohonan' : 'Total pembagian belum sesuai dengan nilai asli permohonan';
-            totalTeks.textContent = rupiah(jumlah) + ' / ' + rupiah(totalAsli);
-            simpan.disabled = !sesuai || adaKosong;
+        const nominal = angka(b.querySelector('[name="nominal[]"]'));
+        const pilihanMak = b.querySelector('select').value;
+
+        jumlah += nominal;
+
+        if (nominal <= 0 || !pilihanMak) {
+            adaKosong = true;
         }
 
-        // Nominal diformat otomatis dengan titik ribuan selama diketik
-        wadah.addEventListener('input', (e) => {
-            if (e.target.name === 'nominal[]') {
-                const nilai = angka(e.target);
-                e.target.value = nilai === 0 ? '' : nilai.toLocaleString('id-ID');
-                segarkan();
-            }
-        });
-        wadah.addEventListener('change', (e) => { if (e.target.tagName === 'SELECT') segarkan(); });
+        const opsiTerpilih =
+            b.querySelector('select').selectedOptions[0];
 
-        // Hapus baris (minimal satu baris tersisa)
-        wadah.addEventListener('click', (e) => {
-            const tombol = e.target.closest('[data-hapus-baris]');
-            if (tombol && semuaBaris().length > 1) {
-                tombol.closest('[data-baris]').remove();
-                segarkan();
-            }
-        });
+        const kategori =
+            opsiTerpilih?.dataset.kategori || 'Belum dipilih';
 
-        // Tambah baris: salin baris pertama lalu kosongkan nominal dan pilihan MAK
-        document.getElementById('tombol-tambah').addEventListener('click', () => {
-            const baru = semuaBaris()[0].cloneNode(true);
-            baru.querySelector('[name="nominal[]"]').value = '';
-            baru.querySelector('select').selectedIndex = 0;
-            wadah.appendChild(baru);
-            segarkan();
-            baru.querySelector('select').focus();
-        });
+        const kotak =
+            cetakan.content.firstElementChild.cloneNode(true);
 
-        document.getElementById('tombol-pecah').addEventListener('click', () => {
-            document.getElementById('distribusi').scrollIntoView({ behavior: 'smooth', block: 'start' });
-            semuaBaris()[0].querySelector('select').focus({ preventScroll: true });
-        });
+        kotak.querySelector('[data-judul]').textContent =
+            kodeInduk + '-' + String.fromCharCode(65 + i) +
+            ' (' + kategori + ')';
 
-        // TODO Backend: setelah action form diisi route penyimpanan, pengiriman berjalan normal (blok ini tidak aktif).
-        form.addEventListener('submit', (e) => { if (!form.getAttribute('action')) e.preventDefault(); });
+        kotak.querySelector('[data-nilai]').textContent =
+            rupiah(nominal);
 
-        segarkan();
+        diagram.appendChild(kotak);
+    });
+
+    const sesuai =
+        jumlah === totalAsli &&
+        baris.length > 0 &&
+        !adaKosong;
+
+    bar.classList.remove(...kelasSesuai, ...kelasSelisih);
+    bar.classList.add(...(sesuai ? kelasSesuai : kelasSelisih));
+
+    pesan.textContent = sesuai
+        ? 'Total pembagian sesuai dengan nilai asli permohonan'
+        : 'Total pembagian belum sesuai dengan nilai asli permohonan';
+
+    totalTeks.textContent =
+        rupiah(jumlah) + ' / ' + rupiah(totalAsli);
+
+    simpan.disabled = !sesuai;
+}
+    segarkan();
+
     })();
 </script>
 @endpush
+    

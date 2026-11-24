@@ -27,12 +27,25 @@ class Pengadaan extends Model
         'Metode_pengadaan',
         'Nominal_anggaran',
         'Status_pengadaan',
+        'Jumlah_termin',
+        'Vendor',
+        'Tanggal_mulai',
+        'Target_pengiriman',
+        'Tanggal_pengingat',
+        'Nominal_harga_perkiraan',
+        'Nominal_harga_akhir',
+        'Catatan_pengadaan',
     ];
 
     protected $casts = [
-        'Nominal_anggaran' => 'decimal:2',
-    ];
-
+    'Nominal_anggaran' => 'decimal:2',
+    'Nominal_harga_perkiraan' => 'decimal:2',
+    'Nominal_harga_akhir' => 'decimal:2',
+    'Jumlah_termin' => 'integer',
+    'Tanggal_mulai' => 'date',
+    'Target_pengiriman' => 'date',
+    'Tanggal_pengingat' => 'date',
+];
     // Relasi ke pengajuan surat.
     public function pengajuan(): BelongsTo
     {
@@ -82,4 +95,23 @@ class Pengadaan extends Model
             'Id_pengadaan'
         );
     }
+
+    // Relasi ke rencana termin pengadaan.
+    public function terminPengadaan(): HasMany
+    {
+        return $this->hasMany(
+            TerminPengadaan::class,
+            'Id_pengadaan',
+            'Id_pengadaan'
+        )->orderBy('Termin_ke');
+    }
+    // Relasi ke seluruh dokumen pengadaan.
+public function dokumen(): HasMany
+{
+    return $this->hasMany(
+        DokumenFile::class,
+        'Id_pengadaan',
+        'Id_pengadaan'
+    );
+}
 }

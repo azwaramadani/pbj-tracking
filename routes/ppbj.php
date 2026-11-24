@@ -24,6 +24,9 @@ Route::prefix('ppbj')
     // Metode Pengadaan (satu halaman, tampilan menyesuaikan status: diproses/selesai = form, revisi = + Permintaan Perbaikan, tinjauan = hanya-baca)
     Route::get('/pengadaan/{id}', [PengadaanController::class, 'show'])->whereNumber('id')->name('pengadaan.show');
 
+    // Simpan pencatatan metode dan informasi pengadaan PPBJ.
+    Route::post('/pengadaan/{id}', [PengadaanController::class, 'update'])->whereNumber('id')->name('pengadaan.update');
+
     // Lihat Permohonan: memakai ulang tampilan Detail Permohonan (komponen ppk.tracking.tahap.memo) dengan layout PPBJ
     Route::get('/pengadaan/{id}/permohonan', [PengadaanController::class, 'permohonan'])->whereNumber('id')->name('permohonan.show');
 

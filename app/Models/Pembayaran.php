@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Pembayaran extends Model
 {
@@ -30,6 +31,8 @@ class Pembayaran extends Model
 
     protected $casts = [
         'Tanggal_bayar' => 'date',
+        'Nominal_dibayar' => 'decimal:2',
+        'Termin_ke' => 'integer',
     ];
 
     // Relasi ke pengadaan.
@@ -49,6 +52,16 @@ class Pembayaran extends Model
             User::class,
             'Id_user_keuangan',
             'Id_user'
+        );
+    }
+
+    // Relasi ke dokumen pembayaran.
+    public function dokumen(): HasMany
+    {
+        return $this->hasMany(
+            DokumenFile::class,
+            'Id_pembayaran',
+            'Id_pembayaran'
         );
     }
 }

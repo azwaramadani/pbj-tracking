@@ -23,8 +23,12 @@ Route::prefix('ppk')
     // Dashboard PPK: sama seperti Dashboard Wadir 2 (tampilan dipakai ulang)
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
+    Route::get('/permohonan/{id}', [PermohonanController::class, 'show'])
+    ->whereNumber('id')
+    ->name('permohonan.show');
+
     // Detail Permohonan (dibuka dari tombol "Detail" di Dashboard): sama seperti Wadir 2 kecuali kartu Keputusan Persetujuan paling bawah
-    Route::get('/permohonan/{id}', [PermohonanController::class, 'show'])->whereNumber('id')->name('permohonan.show');
+    Route::post('/permohonan/{id}/keputusan', [PermohonanController::class, 'keputusan'])->whereNumber('id')->name('permohonan.keputusan');
 
     // Permohonan MAK: dashboard + detail, sama seperti Wadir 2 (tampilan dipakai ulang)
     Route::get('/permohonan-mak', [MakController::class, 'index'])->name('mak.index');

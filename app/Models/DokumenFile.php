@@ -16,6 +16,7 @@ class DokumenFile extends Model
     protected $fillable = [
         'Id_pengadaan',
         'Id_pengajuan',
+        'Id_pembayaran',
         'Tanggal_dokumen',
         'File_path',
         'Kategori_dokumen',
@@ -33,4 +34,20 @@ class DokumenFile extends Model
             'Id_pengajuan'
         );
     }
+    public function pembayaran(): BelongsTo
+{
+    return $this->belongsTo(
+        Pembayaran::class,
+        'Id_pembayaran',
+        'Id_pembayaran'
+    );
+}
+public function pengadaan(): BelongsTo
+{
+    return $this->belongsTo(
+        Pengadaan::class,
+        'Id_pengadaan',
+        'Id_pengadaan'
+    );
+}
 }
